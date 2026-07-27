@@ -1,0 +1,49 @@
+/* Tier: gold — a "gold secret rare" finish: a rotating gold conic sheen over fine sparkle and a
+   diagonal gold band. Manual-selection only (see rarityEffects.ts).
+   `screen` (not `overlay`/`hard-light`) for the main layer: overlay/hard-light barely tint
+   near-black art (they behave like multiply there) while screen always adds visible color
+   without color-dodge's tendency to blow bright art out to solid white. */
+
+.card__shine.effect-gold {
+  background-image: conic-gradient(
+    from var(--pointer-angle) at var(--pointer-x) var(--pointer-y),
+    #4a3510,
+    #caa544,
+    #8a6a1e,
+    #e8cc7a,
+    #6b4f16,
+    #caa544,
+    #4a3510
+  );
+  mix-blend-mode: screen;
+  filter: saturate(1.15);
+  opacity: calc(0.14 + var(--pointer-from-center) * 0.3);
+}
+
+.card__shine.effect-gold::before {
+  background-image: repeating-radial-gradient(
+    circle at var(--seed-x, 40%) var(--seed-y, 60%),
+    #fff6d0 0px,
+    transparent 1.2px,
+    transparent 20px
+  );
+  background-position: var(--pointer-x) var(--pointer-y);
+  mix-blend-mode: color-dodge;
+  opacity: calc(0.1 + var(--pointer-from-center) * 0.28);
+}
+
+.card__shine.effect-gold::after {
+  background-image: repeating-linear-gradient(
+    48deg,
+    transparent 0%,
+    transparent 6%,
+    rgba(212, 175, 55, 0.5) 7%,
+    transparent 8%,
+    transparent 16%
+  );
+  mix-blend-mode: soft-light;
+}
+
+.card.is-active .card__shine.effect-gold {
+  opacity: calc(0.14 + var(--pointer-from-center) * 0.32);
+}

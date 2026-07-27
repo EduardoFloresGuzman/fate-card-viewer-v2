@@ -1,0 +1,49 @@
+/* Tier: galaxy — a "shiny" finish: a vertical rainbow wash under fine etched-glass lines.
+   Manual-selection only (see rarityEffects.ts).
+   Uses the `color` blend mode (not `hue`) — `hue` only shows up where the backdrop already has
+   saturation, so it read as invisible over desaturated art. `color` imposes hue *and* saturation
+   onto the backdrop's existing luminance, so it reads consistently everywhere. */
+
+.card__shine.effect-galaxy {
+  background-image: linear-gradient(
+    calc(var(--rotate-y, 0deg) + 180deg),
+    #ff5e9e 0%,
+    #ffd15e 16%,
+    #8fff5e 32%,
+    #5ecbff 48%,
+    #b25eff 64%,
+    #ff5e9e 80%
+  );
+  background-size: 100% 300%;
+  background-position: var(--pointer-x) var(--pointer-y);
+  mix-blend-mode: color;
+  filter: saturate(1.6);
+  opacity: calc(0.22 + var(--pointer-from-center) * 0.4);
+}
+
+.card__shine.effect-galaxy::before {
+  background-image: repeating-linear-gradient(
+    133deg,
+    transparent 0%,
+    transparent 3.8%,
+    rgba(255, 255, 255, 0.55) 4.2%,
+    transparent 4.6%,
+    transparent 5.2%
+  );
+  background-position: var(--pointer-x) var(--pointer-y);
+  mix-blend-mode: soft-light;
+  opacity: calc(0.15 + var(--pointer-from-center) * 0.4);
+}
+
+.card__shine.effect-galaxy::after {
+  background-image: radial-gradient(
+    circle at var(--seed-x, 50%) var(--seed-y, 50%),
+    #ffffff 0%,
+    transparent 50%
+  );
+  mix-blend-mode: soft-light;
+}
+
+.card.is-active .card__shine.effect-galaxy {
+  opacity: calc(0.22 + var(--pointer-from-center) * 0.4);
+}

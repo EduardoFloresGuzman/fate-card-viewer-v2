@@ -1,0 +1,74 @@
+/* Tier: diorama — not a color-foil finish like the other tiers. Splits the art into two
+   independently-moving layers for a real layered-3D "pop-out" look: a background (the full
+   charaGraph illustration) and, floating in front of it, a transparent full-body cutout of the
+   character ("charaFigure") that shifts further with the pointer than the background does — the
+   classic parallax depth cue. Manual-selection only (see rarityEffects.ts): it needs
+   `figureArt`, and it's a big enough visual departure that it shouldn't replace any tier's
+   default rarity look.
+
+   charaGraph is the character AND the scene painted as one image — there's no background-only
+   asset to fall back to. Blurring/darkening it into total mush hid the duplicate character but
+   also hid the real scenery (pillars, sky, etc.) that made it worth showing at all. Instead,
+   `.card__art--veil` (a radial gradient, center dark -> edges clear) sits between the bg and fg
+   layers and darkens specifically the middle of the frame — where charaGraph's own copy of the
+   character stands — while leaving its edges legible. Only a light blur is needed on top of that.
+
+   The charaFigure crop: Atlas Academy packs it as a sprite atlas — the full-body character fills
+   the top 768px of a standardized 1024x1280 canvas, with a grid of face-expression icons below
+   it. `aspect-ratio: 1024 / 768` on `.card__art--fg` plus `background-size: 100% auto` scales the
+   image to the container's width and lets its natural (taller) height overflow the container,
+   which — because both scale off the same width — clips off exactly the bottom 40% (the face
+   grid) regardless of any individual character's pose. No per-servant tuning needed. The layer is
+   then scaled up well past the card's own width (180%, recentered) so the character reads as
+   life-sized filling the card instead of floating small in the middle of it. */
+
+.card__art--bg {
+  transform: scale(1.25)
+    translate(calc((var(--pointer-x) - 50%) * -0.1), calc((var(--pointer-y) - 50%) * -0.1));
+  filter: brightness(0.55) saturate(0.9) blur(5px);
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.3s ease;
+}
+
+.card__art--veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 52% 62% at 50% 42%,
+    rgba(6, 6, 12, 0.92) 0%,
+    rgba(6, 6, 12, 0.75) 45%,
+    rgba(6, 6, 12, 0.25) 72%,
+    transparent 88%
+  );
+}
+
+.card__art--fg {
+  position: absolute;
+  /* Scaled up well beyond the card's own width (recentered with a matching negative left) so
+     the character reads as life-sized within the card instead of a small floating cutout. At
+     this size the layer is tall enough that even a modest translate is a big absolute shift, so
+     the parallax range below is deliberately small — enough to read as depth, not enough to
+     push the head past the card's overflow:hidden top edge at extreme pointer positions. */
+  left: -40%;
+  width: 180%;
+  top: 3%;
+  aspect-ratio: 1024 / 768;
+  background-size: 100% auto;
+  background-position: top center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  transform: translate3d(
+      calc((var(--pointer-x) - 50%) * 0.08),
+      calc((var(--pointer-y) - 50%) * 0.035),
+      0
+    )
+    scale(1.02);
+  filter: drop-shadow(0 22px 18px rgba(0, 0, 0, 0.5)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card.is-active .card__art--bg,
+.card.is-active .card__art--fg {
+  transition: filter 0.3s ease;
+}

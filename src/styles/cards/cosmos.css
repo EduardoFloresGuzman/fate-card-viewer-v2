@@ -1,0 +1,50 @@
+/* Tier: cosmos — a starfield swirl: a rotating rainbow conic "nebula" under a two-layer
+   sparkle-dot field, all pure CSS gradients (no raster textures). */
+
+.card__shine.effect-cosmos {
+  background-image: conic-gradient(
+    from var(--pointer-angle) at var(--pointer-x) var(--pointer-y),
+    #ffb020,
+    #ff5ec4,
+    #6a5eff,
+    #20d0ff,
+    #4dff9e,
+    #ffe45e,
+    #ffb020
+  );
+  mix-blend-mode: color-burn;
+  filter: brightness(1.2) saturate(1.35) contrast(1.05);
+  opacity: calc(0.13 + var(--pointer-from-center) * 0.5);
+}
+
+.card__shine.effect-cosmos::before {
+  background-image:
+    repeating-radial-gradient(
+      circle at var(--seed-x, 25%) var(--seed-y, 40%),
+      rgba(255, 255, 255, 0.95) 0px,
+      transparent 1.4px,
+      transparent 22px
+    ),
+    repeating-radial-gradient(
+      circle at calc(100% - var(--seed-x, 25%)) calc(100% - var(--seed-y, 40%)),
+      rgba(255, 255, 255, 0.8) 0px,
+      transparent 1px,
+      transparent 34px
+    );
+  background-position: var(--pointer-x) var(--pointer-y);
+  mix-blend-mode: lighten;
+  opacity: calc(0.13 + var(--pointer-from-center) * 0.5);
+}
+
+.card__shine.effect-cosmos::after {
+  background-image: radial-gradient(
+    ellipse at calc(100% - var(--seed-x, 25%)) var(--seed-y, 40%),
+    #ffe9b0 0%,
+    transparent 65%
+  );
+  mix-blend-mode: screen;
+}
+
+.card.is-active .card__shine.effect-cosmos {
+  opacity: calc(0.13 + var(--pointer-from-center) * 0.5);
+}

@@ -1,0 +1,44 @@
+/* Tier: radiant — a sunburst of light rays fanning out from the pointer, under a faint rainbow
+   band. Reserved for manual selection (see rarityEffects.ts).
+   (An earlier version used a 45/-45deg crosshatch blended with `exclusion` + heavy contrast —
+   it read as a harsh, glitchy grid rather than foil, so it was replaced with this softer,
+   pointer-centered ray burst.) */
+
+.card__shine.effect-radiant {
+  background-image: repeating-conic-gradient(
+    from 0deg at var(--pointer-x) var(--pointer-y),
+    rgba(255, 255, 255, 0.5) 0deg 1.2deg,
+    transparent 1.2deg 9deg
+  );
+  mix-blend-mode: soft-light;
+  opacity: calc(0.16 + var(--pointer-from-center) * 0.4);
+}
+
+.card__shine.effect-radiant::before {
+  background-image: repeating-linear-gradient(
+    55deg,
+    #ff5e5e 0%,
+    #ffd15e 14%,
+    #8fff5e 28%,
+    #5ecbff 42%,
+    #b25eff 56%,
+    #ff5e5e 70%
+  );
+  background-size: 240% 240%;
+  background-position: var(--pointer-x) var(--pointer-y);
+  mix-blend-mode: color-dodge;
+  opacity: calc(0.08 + var(--pointer-from-center) * 0.3);
+}
+
+.card__shine.effect-radiant::after {
+  background-image: radial-gradient(
+    ellipse at var(--seed-x, 50%) var(--seed-y, 50%),
+    #ffffff 0%,
+    transparent 55%
+  );
+  mix-blend-mode: overlay;
+}
+
+.card.is-active .card__shine.effect-radiant {
+  opacity: calc(0.16 + var(--pointer-from-center) * 0.4);
+}

@@ -1,0 +1,430 @@
+/* Typed custom properties — required for the browser to smoothly interpolate them on
+   transition (otherwise custom properties are treated as discrete, all-or-nothing values).
+   All five inherit: true — they're set on .card by TiltController but some effect tiers also
+   read rotate-x/y or the pointer properties on .card__shine/.card__glare children, and a
+   non-inheriting property is invisible to children (silently falls back to initial-value). */
+@property --rotate-x {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --rotate-y {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --pointer-x {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+@property --pointer-y {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+@property --pointer-from-center {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+/* Pointer-x expressed as a 0-360deg angle — precomputed in JS since CSS calc() can't multiply
+   a <percentage> by an <angle>. Drives the conic-gradient tiers' rotating `from` stop. */
+@property --pointer-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #0b0b12;
+  --bg-elevated: #15151f;
+  --text: #f2f0f8;
+  --text-dim: #9a97ac;
+  --border: #2a2a3a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% -10%, #1c1830 0%, var(--bg) 60%);
+  color: var(--text);
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+#app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1rem, 4vw, 2.5rem) 4rem;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  margin: 0;
+  background: linear-gradient(90deg, #ffd76b, #ff7bd6, #7bd6ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.page-header p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* ---------- Filter bar ---------- */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.filter-bar input[type="search"],
+.filter-bar select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+.filter-bar .rarity-toggle {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.filter-bar button {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.filter-bar button.is-selected {
+  color: var(--bg);
+  background: linear-gradient(90deg, #ffd76b, #ff7bd6);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.result-count {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* ---------- Status states ---------- */
+
+.status-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.status-panel button {
+  background: linear-gradient(90deg, #ffd76b, #ff7bd6);
+  color: #1a1420;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: #ff7bd6;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Grid ---------- */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: clamp(1rem, 2vw, 1.75rem);
+}
+
+/* ---------- Card ---------- */
+
+.card-frame {
+  perspective: 1200px;
+  /* Skip layout/paint work entirely for off-screen cards — cheap insurance for a 400+ card grid. */
+  content-visibility: auto;
+  contain-intrinsic-size: 260px 364px;
+}
+
+.card {
+  position: relative;
+  aspect-ratio: 5 / 7;
+  border-radius: 0.9rem;
+  overflow: hidden;
+  cursor: pointer;
+  background: #000;
+  box-shadow:
+    0 10px 25px -10px rgba(0, 0, 0, 0.6),
+    0 0 0 1px var(--border);
+  transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+  transform-style: preserve-3d;
+  transition:
+    --rotate-x 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    --rotate-y 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    --pointer-x 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    --pointer-y 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    --pointer-from-center 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.card.is-active {
+  transition: box-shadow 0.3s ease;
+  box-shadow:
+    0 20px 40px -12px rgba(0, 0, 0, 0.7),
+    0 0 30px -4px var(--accent, transparent);
+}
+
+.card__art-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.card__art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  pointer-events: none;
+  background: linear-gradient(160deg, #1c1830, #0b0b12);
+}
+
+.card__shine,
+.card__glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Every effect tier gets up to three independent layers: the main .card__shine background
+   (crisp, pointer-tracked), ::before (a second pointer-tracked layer for depth), and ::after
+   (a slow, always-on ambient shimmer so cards feel alive even before the pointer arrives —
+   each tier file only needs to supply background-image/blend-mode for these). */
+.card__shine::before,
+.card__shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.card__shine::after {
+  animation: ambient-shimmer 9s ease-in-out infinite;
+}
+
+@keyframes ambient-shimmer {
+  0%,
+  100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card__shine::after {
+    animation: none;
+  }
+}
+
+.card.is-active .card__shine,
+.card.is-active .card__glare {
+  opacity: 1;
+}
+
+.card__glare {
+  background: radial-gradient(
+    farthest-corner circle at var(--pointer-x) var(--pointer-y),
+    hsla(0, 0%, 100%, 0.85) 0%,
+    hsla(0, 0%, 100%, 0.15) 40%,
+    hsla(0, 0%, 100%, 0) 80%
+  );
+  mix-blend-mode: overlay;
+}
+
+.card__info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.5rem 0.6rem 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85) 55%);
+  pointer-events: none;
+}
+
+.card__class-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--accent, #888);
+  flex-shrink: 0;
+  box-shadow: 0 0 6px var(--accent, #888);
+}
+
+.card__name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.15;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card__rarity {
+  font-size: 0.68rem;
+  color: #ffd76b;
+  white-space: nowrap;
+}
+
+/* ---------- Detail modal ---------- */
+
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 10, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 20;
+}
+
+.detail-panel {
+  width: min(640px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.detail-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.detail-panel__art {
+  width: 4.5rem;
+  height: 6.3rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.detail-panel__close {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.detail-panel h2 {
+  margin: 0 0 0.2rem;
+}
+
+.detail-panel section {
+  margin-top: 1rem;
+}
+
+.detail-panel h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin: 0 0 0.5rem;
+}
+
+.detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.detail-list img {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 0.3rem;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
