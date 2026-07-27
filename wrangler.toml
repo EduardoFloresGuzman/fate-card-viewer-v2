@@ -1,0 +1,6 @@
+name = "fate-card-viewer-v2"
+compatibility_date = "2026-07-27"
+
+# Pure static site — no server-side Worker code, just the Vite build output.
+[assets]
+directory = "./dist"
