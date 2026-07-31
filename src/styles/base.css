@@ -184,7 +184,7 @@ body {
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: clamp(1rem, 2vw, 1.75rem);
 }
 
@@ -194,7 +194,7 @@ body {
   perspective: 1200px;
   /* Skip layout/paint work entirely for off-screen cards — cheap insurance for a 400+ card grid. */
   content-visibility: auto;
-  contain-intrinsic-size: 260px 364px;
+  contain-intrinsic-size: 280px 392px;
 }
 
 .card {
@@ -333,6 +333,48 @@ body {
   font-size: 0.68rem;
   color: #ffd76b;
   white-space: nowrap;
+}
+
+.card__ascension-bar {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: flex;
+  gap: 0.3rem;
+}
+
+.card__ascension-btn {
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.card__ascension-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--text);
+}
+
+.card__ascension-btn.is-selected {
+  background: linear-gradient(90deg, #ffd76b, #ff7bd6);
+  color: #1a1420;
+  border-color: transparent;
+  transform: scale(1.08);
 }
 
 /* ---------- Detail modal ---------- */

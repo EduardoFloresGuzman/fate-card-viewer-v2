@@ -7,9 +7,18 @@
     "rarity": 4,
     "atkMax": 7815,
     "hpMax": 11516,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/800100/800100a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/800100/800100a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/800100/800100a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/800100/800100b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/800100/800100b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_8001000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/8001000/8001000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/8001000/8001000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/8001001/8001001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/8001002/8001002_merged.png"
+    ]
   },
   {
     "id": 101300,
@@ -19,9 +28,18 @@
     "rarity": 3,
     "atkMax": 7497,
     "hpMax": 9595,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/101300/101300a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/101300/101300a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/101300/101300a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/101300/101300b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/101300/101300b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_1013000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/1013000/1013000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/1013000/1013000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/1013001/1013001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/1013002/1013002_merged.png"
+    ]
   },
   {
     "id": 102200,
@@ -31,9 +49,18 @@
     "rarity": 3,
     "atkMax": 6615,
     "hpMax": 10498,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/102200/102200a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/102200/102200a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/102200/102200a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/102200/102200b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/102200/102200b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_1022000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/1022000/1022000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/1022000/1022000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/1022001/1022001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/1022002/1022002_merged.png"
+    ]
   },
   {
     "id": 201300,
@@ -43,9 +70,18 @@
     "rarity": 1,
     "atkMax": 5816,
     "hpMax": 7122,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/201300/201300a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/201300/201300a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/201300/201300a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/201300/201300b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/201300/201300b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_2013000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/2013000/2013000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/2013000/2013000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/2013001/2013001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/2013002/2013002_merged.png"
+    ]
   },
   {
     "id": 300600,
@@ -55,9 +91,18 @@
     "rarity": 2,
     "atkMax": 5801,
     "hpMax": 9149,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/300600/300600a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/300600/300600a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/300600/300600a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/300600/300600b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/300600/300600b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_3006000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/3006000/3006000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/3006000/3006000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/3006001/3006001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/3006002/3006002_merged.png"
+    ]
   },
   {
     "id": 300900,
@@ -67,9 +112,18 @@
     "rarity": 2,
     "atkMax": 6583,
     "hpMax": 7959,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/300900/300900a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/300900/300900a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/300900/300900a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/300900/300900b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/300900/300900b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_3009000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/3009000/3009000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/3009000/3009000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/3009001/3009001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/3009002/3009002_merged.png"
+    ]
   },
   {
     "id": 400100,
@@ -79,9 +133,18 @@
     "rarity": 3,
     "atkMax": 7200,
     "hpMax": 8937,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/400100/400100a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/400100/400100a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/400100/400100a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/400100/400100b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/400100/400100b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_4001000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/4001000/4001000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/4001000/4001000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/4001001/4001001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/4001002/4001002_merged.png"
+    ]
   },
   {
     "id": 401100,
@@ -91,9 +154,18 @@
     "rarity": 3,
     "atkMax": 6289,
     "hpMax": 10130,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/401100/401100a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/401100/401100a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/401100/401100a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/401100/401100b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/401100/401100b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_4011000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/4011000/4011000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/4011000/4011000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/4011001/4011001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/4011002/4011002_merged.png"
+    ]
   },
   {
     "id": 501500,
@@ -103,9 +175,18 @@
     "rarity": 1,
     "atkMax": 5195,
     "hpMax": 7129,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/501500/501500a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/501500/501500a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/501500/501500a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/501500/501500b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/501500/501500b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_5015000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/5015000/5015000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/5015000/5015000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/5015001/5015001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/5015002/5015002_merged.png"
+    ]
   },
   {
     "id": 601000,
@@ -115,9 +196,18 @@
     "rarity": 4,
     "atkMax": 8985,
     "hpMax": 11518,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/601000/601000a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/601000/601000a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/601000/601000a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/601000/601000b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/601000/601000b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_6010000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/6010000/6010000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/6010000/6010000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/6010001/6010001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/6010002/6010002_merged.png"
+    ]
   },
   {
     "id": 601700,
@@ -127,9 +217,18 @@
     "rarity": 4,
     "atkMax": 9408,
     "hpMax": 10473,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/601700/601700a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/601700/601700a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/601700/601700a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/601700/601700b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/601700/601700b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_6017000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/6017000/6017000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/6017000/6017000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/6017001/6017001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/6017002/6017002_merged.png"
+    ]
   },
   {
     "id": 700100,
@@ -139,9 +238,18 @@
     "rarity": 4,
     "atkMax": 10655,
     "hpMax": 10327,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/700100/700100a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/700100/700100a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700100/700100a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700100/700100b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700100/700100b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_7001000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/7001000/7001000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/7001000/7001000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7001001/7001001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7001002/7001002_merged.png"
+    ]
   },
   {
     "id": 700200,
@@ -151,9 +259,18 @@
     "rarity": 4,
     "atkMax": 10477,
     "hpMax": 10327,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/700200/700200a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/700200/700200a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700200/700200a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700200/700200b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700200/700200b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_7002000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/7002000/7002000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/7002000/7002000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7002001/7002001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7002002/7002002_merged.png"
+    ]
   },
   {
     "id": 701600,
@@ -163,9 +280,18 @@
     "rarity": 4,
     "atkMax": 9026,
     "hpMax": 11458,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/701600/701600a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/701600/701600a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/701600/701600a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/701600/701600b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/701600/701600b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_7016000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/7016000/7016000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/7016000/7016000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7016001/7016001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7016002/7016002_merged.png"
+    ]
   },
   {
     "id": 900100,
@@ -175,9 +301,18 @@
     "rarity": 5,
     "atkMax": 9593,
     "hpMax": 16500,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/900100/900100a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/900100/900100a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900100/900100a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900100/900100b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900100/900100b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_9001000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/9001000/9001000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/9001000/9001000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/9001001/9001001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/9001002/9001002_merged.png"
+    ]
   },
   {
     "id": 700400,
@@ -187,9 +322,18 @@
     "rarity": 4,
     "atkMax": 9441,
     "hpMax": 10687,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/700400/700400a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/700400/700400a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700400/700400a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700400/700400b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/700400/700400b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_7004000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/7004000/7004000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/7004000/7004000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7004001/7004001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/7004002/7004002_merged.png"
+    ]
   },
   {
     "id": 900200,
@@ -199,9 +343,18 @@
     "rarity": 5,
     "atkMax": 10972,
     "hpMax": 14107,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/900200/900200a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/900200/900200a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900200/900200a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900200/900200b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900200/900200b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_9002000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/9002000/9002000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/9002000/9002000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/9002001/9002001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/9002002/9002002_merged.png"
+    ]
   },
   {
     "id": 1100100,
@@ -211,9 +364,18 @@
     "rarity": 0,
     "atkMax": 5683,
     "hpMax": 7981,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/1100100/1100100a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/1100100/1100100a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1100100/1100100a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1100100/1100100b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1100100/1100100b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_11001000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/11001000/11001000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/11001000/11001000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/11001001/11001001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/11001002/11001002_merged.png"
+    ]
   },
   {
     "id": 1000200,
@@ -223,9 +385,18 @@
     "rarity": 5,
     "atkMax": 11692,
     "hpMax": 13402,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/1000200/1000200a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/1000200/1000200a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000200/1000200a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000200/1000200b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000200/1000200b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_10002000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/10002000/10002000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/10002000/10002000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/10002001/10002001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/10002002/10002002_merged.png"
+    ]
   },
   {
     "id": 1000300,
@@ -235,9 +406,18 @@
     "rarity": 5,
     "atkMax": 11668,
     "hpMax": 14606,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/1000300/1000300a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/1000300/1000300a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000300/1000300a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000300/1000300b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000300/1000300b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_10003000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/10003000/10003000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/10003000/10003000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/10003001/10003001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/10003002/10003002_merged.png"
+    ]
   },
   {
     "id": 900500,
@@ -247,9 +427,18 @@
     "rarity": 5,
     "atkMax": 11495,
     "hpMax": 13365,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/900500/900500a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/900500/900500a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900500/900500a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900500/900500b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/900500/900500b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_9005000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/9005000/9005000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/9005000/9005000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/9005001/9005001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/9005002/9005002_merged.png"
+    ]
   },
   {
     "id": 2500100,
@@ -259,9 +448,18 @@
     "rarity": 5,
     "atkMax": 12100,
     "hpMax": 13770,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/2500100/2500100a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/2500100/2500100a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/2500100/2500100a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/2500100/2500100b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/2500100/2500100b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_25001000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/25001000/25001000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/25001000/25001000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/25001001/25001001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/25001002/25001002_merged.png"
+    ]
   },
   {
     "id": 2500200,
@@ -271,9 +469,18 @@
     "rarity": 5,
     "atkMax": 12100,
     "hpMax": 13230,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/2500200/2500200a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/2500200/2500200a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/2500200/2500200a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/2500200/2500200b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/2500200/2500200b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_25002000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/25002000/25002000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/25002000/25002000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/25002001/25002001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/25002002/25002002_merged.png"
+    ]
   },
   {
     "id": 1000700,
@@ -283,8 +490,17 @@
     "rarity": 5,
     "atkMax": 12465,
     "hpMax": 12696,
-    "cardArt": "https://static.atlasacademy.io/NA/CharaGraph/1000700/1000700a@1.png",
+    "cardArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaGraph/1000700/1000700a@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000700/1000700a@2.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000700/1000700b@1.png",
+      "https://static.atlasacademy.io/NA/CharaGraph/1000700/1000700b@2.png"
+    ],
     "faceIcon": "https://static.atlasacademy.io/NA/Faces/f_10007000.png",
-    "figureArt": "https://static.atlasacademy.io/NA/CharaFigure/10007000/10007000_merged.png"
+    "figureArtByAscension": [
+      "https://static.atlasacademy.io/NA/CharaFigure/10007000/10007000_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/10007001/10007001_merged.png",
+      "https://static.atlasacademy.io/NA/CharaFigure/10007002/10007002_merged.png"
+    ]
   }
 ]

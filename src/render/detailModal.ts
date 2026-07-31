@@ -24,7 +24,7 @@ export function openDetailModal(servant: ServantSummary, region: Region): void {
   const art = document.createElement("img");
   art.className = "detail-panel__art";
   art.crossOrigin = "anonymous";
-  art.src = servant.cardArt;
+  art.src = servant.cardArtByAscension[0] ?? "";
   art.alt = "";
 
   const titleWrap = document.createElement("div");

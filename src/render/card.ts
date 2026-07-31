@@ -29,7 +29,9 @@ export function createCard(
   card.setAttribute("tabindex", "0");
   card.setAttribute("aria-label", `${servant.name} — view details`);
 
-  const artWrap = buildArtLayer(servant, effectTier);
+  const artWrap = document.createElement("div");
+  artWrap.className = "card__art-wrap";
+  renderArt(artWrap, servant, effectTier, 1);
 
   const shine = document.createElement("div");
   shine.className = `card__shine ${effectClassName(effectTier)}`;
@@ -54,6 +56,34 @@ export function createCard(
 
   info.append(classDot, name, rarity);
   card.append(artWrap, shine, glare, info);
+
+  // Ascension stage picker — every servant has 4 charaGraph stages (charaFigure only ships 3;
+  // renderArt() clamps to the last one available for the diorama tier). Overlaid on the card
+  // itself (not the info footer) so it tilts along with everything else.
+  const ascensionCount = servant.cardArtByAscension.length;
+  if (ascensionCount > 1) {
+    const ascensionBar = document.createElement("div");
+    ascensionBar.className = "card__ascension-bar";
+    const buttons: HTMLButtonElement[] = [];
+    for (let stage = 1; stage <= ascensionCount; stage++) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "card__ascension-btn";
+      button.textContent = String(stage);
+      button.setAttribute("aria-label", `Ascension ${stage} art`);
+      button.classList.toggle("is-selected", stage === 1);
+      button.addEventListener("click", (event) => {
+        // Ascension buttons sit on top of the card's own click-to-open-detail handler.
+        event.stopPropagation();
+        renderArt(artWrap, servant, effectTier, stage);
+        for (const other of buttons) other.classList.toggle("is-selected", other === button);
+      });
+      buttons.push(button);
+      ascensionBar.appendChild(button);
+    }
+    card.appendChild(ascensionBar);
+  }
+
   frame.appendChild(card);
 
   // Listen on `frame` (never transformed) and style `card` (the element that tilts) — see
@@ -78,19 +108,31 @@ export function createCard(
 }
 
 /**
- * Builds the art layer(s) for a card. The "diorama" tier splits the art into two independently
- * parallaxed layers (see styles/cards/diorama.css) instead of the usual single flat image — it
- * falls back to the normal single-image layout if the servant has no transparent cutout.
+ * (Re)builds the art layer(s) inside `artWrap` for the given ascension stage. The "diorama" tier
+ * splits the art into two independently parallaxed layers (see styles/cards/diorama.css) instead
+ * of the usual single flat image — it falls back to the normal single-image layout if the
+ * servant has no transparent cutout at all. Callable repeatedly (the ascension picker calls this
+ * again on click) — always clears `artWrap` first.
  */
-function buildArtLayer(servant: ServantSummary, effectTier: EffectTier): HTMLElement {
-  const artWrap = document.createElement("div");
-  artWrap.className = "card__art-wrap";
+function renderArt(
+  artWrap: HTMLElement,
+  servant: ServantSummary,
+  effectTier: EffectTier,
+  ascension: number,
+): void {
+  artWrap.replaceChildren();
 
-  if (effectTier === "diorama" && servant.figureArt) {
+  const cardArt = servant.cardArtByAscension[ascension - 1] ?? servant.cardArtByAscension[0] ?? "";
+  // charaFigure only ships 3 ascension stages (charaGraph ships 4) — clamp to the last one
+  // available rather than showing nothing for ascension 4.
+  const figureIndex = Math.min(ascension, servant.figureArtByAscension.length) - 1;
+  const figureArt = figureIndex >= 0 ? servant.figureArtByAscension[figureIndex] : undefined;
+
+  if (effectTier === "diorama" && figureArt) {
     const bg = document.createElement("img");
     bg.className = "card__art card__art--bg";
     bg.crossOrigin = "anonymous";
-    bg.src = servant.cardArt;
+    bg.src = cardArt;
     bg.alt = servant.name;
     bg.loading = "lazy";
     bg.decoding = "async";
@@ -103,21 +145,20 @@ function buildArtLayer(servant: ServantSummary, effectTier: EffectTier): HTMLEle
 
     const fg = document.createElement("div");
     fg.className = "card__art--fg";
-    fg.style.backgroundImage = `url(${JSON.stringify(servant.figureArt)})`;
+    fg.style.backgroundImage = `url(${JSON.stringify(figureArt)})`;
     fg.setAttribute("role", "img");
     fg.setAttribute("aria-label", servant.name);
 
     artWrap.append(bg, veil, fg);
-    return artWrap;
+    return;
   }
 
   const art = document.createElement("img");
   art.className = "card__art";
   art.crossOrigin = "anonymous";
-  art.src = servant.cardArt;
+  art.src = cardArt;
   art.alt = servant.name;
   art.loading = "lazy";
   art.decoding = "async";
   artWrap.appendChild(art);
-  return artWrap;
 }

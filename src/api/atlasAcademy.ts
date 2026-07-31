@@ -3,7 +3,7 @@ import fixtureServants from "./fixtures/servants.sample.json";
 
 const CACHE_KEY_PREFIX = "fgo-card-viewer:servants:";
 /** Bump when the trimmed ServantSummary shape changes, to invalidate stale caches. */
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 
 function cacheKey(region: Region): string {
   return `${CACHE_KEY_PREFIX}${region}:v${CACHE_VERSION}`;
@@ -16,10 +16,21 @@ function pickAscension(ascension: Record<string, string> | undefined): string | 
   return first;
 }
 
+/** Every ascension-keyed art URL, in ascension order (1, 2, 3, ...) — not just the first one. */
+function collectAscensionUrls(ascension: Record<string, string> | undefined): string[] {
+  if (!ascension) return [];
+  return Object.keys(ascension)
+    .map(Number)
+    .filter((n) => !Number.isNaN(n))
+    .sort((a, b) => a - b)
+    .map((n) => ascension[String(n)])
+    .filter((url): url is string => Boolean(url));
+}
+
 function toSummary(raw: RawNiceServant): ServantSummary {
-  const cardArt = pickAscension(raw.extraAssets.charaGraph?.ascension);
+  const cardArtByAscension = collectAscensionUrls(raw.extraAssets.charaGraph?.ascension);
   const faceIcon = pickAscension(raw.extraAssets.faces?.ascension) ?? null;
-  const figureArt = pickAscension(raw.extraAssets.charaFigure?.ascension) ?? null;
+  const figureArtByAscension = collectAscensionUrls(raw.extraAssets.charaFigure?.ascension);
   return {
     id: raw.id,
     collectionNo: raw.collectionNo,
@@ -28,9 +39,9 @@ function toSummary(raw: RawNiceServant): ServantSummary {
     rarity: raw.rarity,
     atkMax: raw.atkMax,
     hpMax: raw.hpMax,
-    cardArt: cardArt ?? faceIcon ?? "",
+    cardArtByAscension: cardArtByAscension.length > 0 ? cardArtByAscension : [faceIcon ?? ""],
     faceIcon,
-    figureArt,
+    figureArtByAscension,
   };
 }
 

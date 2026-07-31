@@ -27,17 +27,24 @@ export interface ServantSummary {
   rarity: number;
   atkMax: number;
   hpMax: number;
-  /** Full illustration ("charaGraph"), falls back to the small face icon if absent. */
-  cardArt: string;
+  /**
+   * Full illustration ("charaGraph"), one per ascension stage, in ascension order (index 0 =
+   * ascension 1). Confirmed 4 entries for every servant checked (1★ through 5★) — always index
+   * defensively (`?? cardArtByAscension[0]`) rather than assuming a fixed length. Falls back to
+   * `[faceIcon]` (or `[""]`) if charaGraph is entirely absent, which is rare.
+   */
+  cardArtByAscension: string[];
   faceIcon: string | null;
   /**
-   * Transparent full-body cutout ("charaFigure"), used by the "diorama" effect tier to float
-   * the character in front of a separate background layer. Atlas Academy ships this as a sprite
-   * atlas — the character fills the top 60% (768/1280px) of a standardized 1024x1280 canvas,
-   * with a grid of face-expression icons packed below it — see styles/cards/diorama.css for the
-   * crop. Null if the servant has no charaFigure (rare; falls back to the flat cardArt).
+   * Transparent full-body cutout ("charaFigure"), one per ascension stage, used by the "diorama"
+   * effect tier to float the character in front of a separate background layer. Atlas Academy
+   * ships this as a sprite atlas — the character fills the top 60% (768/1280px) of a standardized
+   * 1024x1280 canvas, with a grid of face-expression icons packed below it — see
+   * styles/cards/diorama.css for the crop. **Confirmed only 3 entries** (not 4 like charaGraph) —
+   * ascension 4 has no charaFigure of its own; callers must clamp to the last available index.
+   * Empty array if the servant has no charaFigure at all (rare).
    */
-  figureArt: string | null;
+  figureArtByAscension: string[];
 }
 
 export interface ServantSkillDetail {
