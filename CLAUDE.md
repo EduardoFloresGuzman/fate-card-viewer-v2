@@ -67,6 +67,10 @@ fate-card-viewer-v2/
   JSON will silently miss new fields.
 - On any fetch failure, falls back to the bundled `fixtures/servants.sample.json` — the app
   never hard-fails to load *something*.
+- `cardArtByAscension`/`figureArtByAscension` are arrays (charaGraph ships 4 ascension stages,
+  charaFigure only 3), not single URLs — see the per-ascension art selector note under Effect
+  System below. Use the [refresh-fixtures](.claude/skills/refresh-fixtures/SKILL.md) skill to
+  regenerate the offline fixture if this shape changes again.
 - `fetchServantDetail(id, region)` is a separate, uncached, on-demand call (only fired when a
   card's detail modal is opened) — the bulk summary deliberately excludes skills/NP data to keep
   it small.
@@ -121,8 +125,8 @@ layers:
 
 ### The `diorama` tier (`styles/cards/diorama.css`) — different architecture
 
-Not a color-foil overlay — a real two-layer 3D parallax. `card.ts`'s `buildArtLayer()` special-
-cases this tier: instead of one `<img class="card__art">`, it builds
+Not a color-foil overlay — a real two-layer 3D parallax. `card.ts`'s `renderArt()` special-cases
+this tier: instead of one `<img class="card__art">`, it builds
 `bg (<img>, charaGraph) → veil (div) → fg (div, charaFigure background-image)`, each moving
 independently with the pointer (fg shifts more than bg — the depth cue).
 
@@ -148,9 +152,21 @@ independently with the pointer (fg shifts more than bg — the depth cue).
   just center-ish hover) — this is exactly where a too-large shift or too-small buffer pushes the
   character's head past the card's `overflow: hidden` top edge. It won't show at rest or at
   gentle angles, only at the extremes.
-- Falls back to the normal single-image layout automatically if `servant.figureArt` is null
-  (charaFigure is confirmed present for all 412 current playable servants, but treat it as
-  optional — don't assume future roster additions will have it).
+- Falls back to the normal single-image layout automatically if the servant has no
+  `figureArtByAscension` entries at all (charaFigure is confirmed present for all 412 current
+  playable servants, but treat it as optional — don't assume future roster additions will have it).
+
+### Per-ascension art selector
+
+Every card that has more than one `cardArtByAscension` entry gets a small `1`/`2`/`3`/`4`
+picker (`.card__ascension-bar`) overlaid top-right, built in `createCard()`. Clicking a stage
+button calls `renderArt(artWrap, servant, effectTier, stage)` again — it's a fully re-callable
+function that clears and rebuilds whatever's inside `artWrap`, so it works identically for the
+single-image and diorama layouts. **charaGraph reliably has 4 ascension stages; charaFigure only
+ships 3** — `renderArt()` clamps the figure index with
+`Math.min(ascension, figureArtByAscension.length) - 1` so picking ascension 4 in the diorama tier
+reuses ascension 3's cutout rather than erroring or going blank. Ascension buttons call
+`event.stopPropagation()` since they sit on top of the card's own click-to-open-detail handler.
 
 ---
 

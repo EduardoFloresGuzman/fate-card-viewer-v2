@@ -8,8 +8,8 @@ description: Regenerate src/api/fixtures/servants.sample.json, the offline fallb
 `src/api/fixtures/servants.sample.json` is the array `fetchServants()` in
 `src/api/atlasAcademy.ts` falls back to when the live API request fails — it must always match
 the current `ServantSummary` shape exactly (see `src/api/types.ts`), including every field
-(`id`, `collectionNo`, `name`, `className`, `rarity`, `atkMax`, `hpMax`, `cardArt`, `faceIcon`,
-`figureArt`).
+(`id`, `collectionNo`, `name`, `className`, `rarity`, `atkMax`, `hpMax`, `cardArtByAscension`,
+`faceIcon`, `figureArtByAscension`).
 
 ## Steps
 
@@ -20,12 +20,13 @@ the current `ServantSummary` shape exactly (see `src/api/types.ts`), including e
    ```
 2. Filter to the playable roster: `collectionNo > 0 && (type === "normal" || type === "heroine")`
    — matches `isPlayable()` in `atlasAcademy.ts` exactly, keep them in sync.
-3. Map each to the `ServantSummary` shape (mirrors `toSummary()` in `atlasAcademy.ts`):
-   `cardArt` from `extraAssets.charaGraph.ascension["1"]` (fallback to the first available
-   ascension key, then to `faceIcon` if charaGraph is entirely absent), `faceIcon` from
-   `extraAssets.faces.ascension["1"]`, `figureArt` from
-   `extraAssets.charaFigure.ascension["1"]` (or `null` if absent — confirmed present for all
-   current playable servants, but don't assume that holds forever).
+3. Map each to the `ServantSummary` shape (mirrors `toSummary()`/`collectAscensionUrls()` in
+   `atlasAcademy.ts`): `cardArtByAscension` is every `extraAssets.charaGraph.ascension` URL sorted
+   by ascension key (falls back to `[faceIcon]` if charaGraph is entirely absent), `faceIcon` from
+   `extraAssets.faces.ascension["1"]`, `figureArtByAscension` is every
+   `extraAssets.charaFigure.ascension` URL sorted by ascension key (empty array if absent).
+   **Note**: charaGraph/faces reliably have 4 ascension-keyed entries; charaFigure only ships 3 —
+   don't assume the two arrays are the same length.
 4. Pick a **diverse** subset (not just the first N) — spread across all five rarities and as
    many different classes as possible, similar counts weighted toward the more common 4★/5★
    tier. ~20-25 entries is plenty. Include a few recognizable names if practical (helps sanity-
