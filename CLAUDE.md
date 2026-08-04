@@ -26,24 +26,36 @@ fate-card-viewer-v2/
 │   ├── api/
 │   │   ├── types.ts            # ServantSummary, ServantDetail, RawNiceServant shapes
 │   │   ├── atlasAcademy.ts     # fetchServants() / fetchServantDetail() — see Data Layer below
-│   │   ├── rarityEffects.ts    # EffectTier catalog, rarity→tier mapping, class accent colors
+│   │   ├── rarityEffects.ts    # EffectTier catalog, rarity→tier mapping, class accent colors,
+│   │   │                       # pickRandomEffectTier() for the home page's randomizer
 │   │   └── fixtures/
 │   │       └── servants.sample.json   # ~24-servant offline fallback, ServantSummary-shaped
 │   ├── effects/
-│   │   └── pointerTilt.ts      # Pure computeTilt() math + TiltController (pointer/gyro → CSS vars)
+│   │   ├── pointerTilt.ts      # Pure computeTilt() math + TiltController (pointer/gyro → CSS vars)
+│   │   ├── heroParallax.ts     # Lightweight hero-section pointer nudge — NOT TiltController, see below
+│   │   ├── motionPreference.ts # prefersReducedMotion() — the one place every animation checks this
+│   │   └── scrollReveal.ts     # motion `inView` → toggles `.is-visible` on `.reveal` elements
 │   ├── render/
 │   │   ├── card.ts             # Builds one card's DOM (incl. the two-layer diorama variant)
 │   │   ├── cardGrid.ts         # Renders/replaces a grid of cards, owns TiltController lifecycle
 │   │   ├── detailModal.ts      # Click-to-expand skill/NP detail panel (live per-servant fetch)
 │   │   └── format.ts           # classLabel/starString/effectClassName display helpers
+│   ├── pages/
+│   │   ├── home.ts             # Hero + randomizer ("Pull a Servant") — see Routing & Pages below
+│   │   └── gallery.ts          # The filterable grid (search/rarity/class/effect)
 │   ├── styles/
-│   │   ├── base.css            # Card frame/tilt/glare plumbing, custom `@property` registrations
-│   │   ├── index.css           # Aggregates base.css + every cards/*.css
+│   │   ├── base.css            # Tokens, reusable chrome utilities, card frame/tilt/glare plumbing
+│   │   ├── nav.css              # Shared site nav bar
+│   │   ├── home.css             # Hero layout + floating decorative icons
+│   │   ├── index.css           # Aggregates base/nav/home.css + every cards/*.css
 │   │   └── cards/
 │   │       ├── holo.css, cosmos.css, radiant.css, rainbow.css, gold.css, galaxy.css
 │   │       │                   # One file per color-foil effect tier (see Effect System below)
 │   │       └── diorama.css     # The 3D parallax tier — structurally different, see below
-│   ├── main.ts                 # App shell: filters, loading/error states, wires everything up
+│   ├── router.ts               # Hash-based two-route router (home/gallery) — see below
+│   ├── servantStore.ts          # Shared, load-once roster fetch both pages subscribe to
+│   ├── randomPull.ts             # Pure: pick a random servant + effect tier + ascension stage
+│   ├── main.ts                 # Composition root: nav shell, font import, router wiring
 │   └── registerServiceWorker.ts
 ├── public/
 │   ├── favicon.svg
@@ -58,7 +70,7 @@ fate-card-viewer-v2/
 
 - `fetchServants(region)` hits the **nice** bulk export
   (`/export/{region}/nice_servant.json` — ~40MB raw, ~5MB gzipped over the wire), not the
-  lighter *basic* export, because only *nice* carries `extraAssets.charaGraph` /
+  lighter _basic_ export, because only _nice_ carries `extraAssets.charaGraph` /
   `extraAssets.charaFigure` (see Effect System). The response is immediately trimmed down to
   `ServantSummary` (~100KB for the whole roster) and **only the trimmed summary is cached** —
   the multi-MB raw payload never touches `localStorage`.
@@ -66,7 +78,7 @@ fate-card-viewer-v2/
   `atlasAcademy.ts` any time `ServantSummary`'s shape changes, or existing users' stale cached
   JSON will silently miss new fields.
 - On any fetch failure, falls back to the bundled `fixtures/servants.sample.json` — the app
-  never hard-fails to load *something*.
+  never hard-fails to load _something_.
 - `cardArtByAscension`/`figureArtByAscension` are arrays (charaGraph ships 4 ascension stages,
   charaFigure only 3), not single URLs — see the per-ascension art selector note under Effect
   System below. Use the [refresh-fixtures](.claude/skills/refresh-fixtures/SKILL.md) skill to
@@ -76,6 +88,40 @@ fate-card-viewer-v2/
   it small.
 - Filtering: playable roster = `collectionNo > 0 && type in ("normal", "heroine")` — confirmed
   against the live API to exclude enemy-only and unreleased entries.
+
+---
+
+## Routing & Pages (`src/router.ts`, `src/servantStore.ts`, `src/pages/`)
+
+Two routes, **hash-based** (`#/` home, `#/gallery` gallery) — deliberately not the History API.
+A hash fragment never reaches the server, so `wrangler.toml`'s static-asset config needs zero
+changes for deep links/hard refreshes to work, and back/forward/`hashchange` all work natively
+with no click-interception code. `router.ts` maps `location.hash` → `Route`, defaulting unknown
+hashes to `"home"`.
+
+Both pages implement the same contract: `render(mount: HTMLElement): () => void` — build your DOM
+into `mount`, return a teardown callback. `main.ts` (the composition root) owns exactly one active
+page at a time: on every route change it calls the outgoing page's teardown, then the incoming
+page's `render(outlet)`.
+
+**`servantStore.ts`** is the single place the servant roster is fetched — `loadRosterOnce(region)`
+is idempotent (safe to call from `main.ts` once at boot; the underlying `fetchServants()` call only
+ever fires once), `subscribeRoster(listener)` calls back immediately with the current state and
+again on every change, and `retryRoster(region)` re-runs the fetch for the error state's "try
+again" button. Neither page calls `fetchServants()` directly — this is what lets Home and Gallery
+share one fetch without either page needing to know about the other.
+
+**`home.ts`** — the "Pull a Servant" randomizer. `randomPull.ts`'s `pickRandomPull(servants)` picks
+a uniformly random servant, a random non-`"basic"` effect tier (`pickRandomEffectTier()` in
+`rarityEffects.ts` — `"basic"` renders no shine at all, which would make some pulls feel like
+nothing happened), and a random ascension stage. The result renders via the _same_
+`renderCardGrid()` gallery uses, called with a one-element array and a `.card-grid--hero` CSS
+modifier for the bigger centered presentation — this gets the exact same `TiltController`
+create/destroy cleanup gallery relies on for free (its `WeakMap<container, CardHandle[]>` already
+tears down the previous card before mounting the next one, so every "Pull Again" click is
+automatically safe with zero new bookkeeping). `createCard()` takes an optional 4th
+`initialAscension` param (default `1`, so gallery's call site is unaffected) so the hero card can
+open on the randomly-picked stage instead of always ascension 1.
 
 ---
 
@@ -92,6 +138,7 @@ has something the default grid view doesn't show.
 
 Each is a `styles/cards/<tier>.css` file targeting `.card__shine.effect-<tier>` with up to three
 layers:
+
 - The **main rule** and its `::before` — pointer-tracked, opacity driven by
   `calc(<baseline> + var(--pointer-from-center) * <range>)`. Keep baseline low (~0.1–0.16) and
   the range large — a high baseline makes cards look permanently tinted at rest.
@@ -99,6 +146,7 @@ layers:
   `base.css`), not pointer-tracked. This is what makes cards feel alive before you touch them.
 
 **Hard-won lessons, don't repeat these:**
+
 - **Blend mode choice matters more than opacity.** `color-dodge`/`hard-light` blow bright
   artwork out to solid white fast and barely tint near-black artwork at all (they degrade to
   screen/multiply-like behavior at the extremes). `screen` reliably shows on dark art without
@@ -107,8 +155,8 @@ layers:
 - **Always check both a very bright/light card AND a very dark card** before calling a tier done
   — an effect tuned against one look wrong on the other, in different ways.
 - The **main element** needs an explicit `.card.is-active .card__shine.effect-<tier> { opacity:
-  ... }` override matching its base rule — `base.css`'s generic `.card.is-active .card__shine {
-  opacity: 1; }` has higher specificity than a bare `.card__shine.effect-<tier>` and will
+... }` override matching its base rule — `base.css`'s generic `.card.is-active .card__shine {
+opacity: 1; }` has higher specificity than a bare `.card__shine.effect-<tier>` and will
   override it otherwise. `::before`/`::after` don't need this (base.css has no active-state rule
   targeting pseudo-elements).
 - `--rotate-x`, `--rotate-y`, `--pointer-x`, `--pointer-y`, `--pointer-from-center`,
@@ -119,7 +167,7 @@ layers:
 - CSS `calc()` **cannot multiply a `<percentage>` by an `<angle>`** — conic-gradient tiers that
   need to rotate with `--pointer-x` use the precomputed `--pointer-angle` (set in
   `pointerTilt.ts`'s `applyTilt()`, `pointerX * 3.6` converted to `deg` in JS) instead of trying
-  `calc(var(--pointer-x) * 1deg * 3.6)`, which is invalid and silently drops the *entire*
+  `calc(var(--pointer-x) * 1deg * 3.6)`, which is invalid and silently drops the _entire_
   `background-image` declaration (not just that one function) — this reads as "the effect does
   nothing" with no console error.
 
@@ -137,7 +185,7 @@ independently with the pointer (fg shifts more than bg — the depth cue).
   `.card__art--fg` `aspect-ratio: 1024/768` and `background-size: 100% auto` — the image scales
   to the container's width, and since both scale off the same width, the natural (taller) height
   overflows the container and gets clipped, showing exactly the top 60%. No per-servant tuning.
-- **There is no background-only asset.** `charaGraph` is the character *and* the scene painted
+- **There is no background-only asset.** `charaGraph` is the character _and_ the scene painted
   as one image — using it as the background layer means it contains its own copy of the
   character. A heavy blur alone either still shows a recognizable "ghost" duplicate (too light)
   or hides the real scenery along with it (too heavy). `.card__art--veil` — a radial gradient,
@@ -180,10 +228,52 @@ come back.
 `styleElement` (gets the CSS custom properties + `is-active` class). These must be different —
 `card.ts` passes `frame` (the never-transformed `.card-frame` wrapper) and `card` (the element
 that actually rotates in 3D). If you ever wire a new tilting element, do NOT listen on the element
-being transformed: hit-testing follows the element's *rendered* (post-transform) geometry, so a
+being transformed: hit-testing follows the element's _rendered_ (post-transform) geometry, so a
 listener on the rotating element chases its own tail — as it tilts away from the pointer it
 appears to "leave" itself, firing `pointerleave`, snapping back to neutral, re-entering, forever.
 This is a real bug that was shipped and caught, not a hypothetical.
+
+---
+
+## Design System (`styles/base.css` tokens/utilities, `styles/nav.css`, `styles/home.css`)
+
+The page chrome (nav, hero, buttons, eyebrow labels) is a separate visual layer from the holo-card
+effect system above — inspired by [inkgames.com](https://inkgames.com/)'s bold black/white
+marketing-site look, not by poke-holo.simey.me. Stays **monochrome outside the cards**: the
+existing brand gradient (`--accent-gold`/`--accent-pink`/`--accent-blue`, tokenized in `base.css`)
+is the one accent, used sparingly (CTA fills, active-nav-link underline, the eyebrow bullet) — the
+holo cards themselves are still the only place color explodes.
+
+- **`--font-display: "Anton", ...`** — a free (SIL OFL), self-hosted (`@fontsource/anton`) heavy
+  condensed grotesk, used **only** for the hero H1/section headings, never eyebrows/nav/body text
+  (it reads clunky at small sizes). Imported as a side-effect import in `main.ts`
+  (`@fontsource/anton/latin-400.css`), not a Google Fonts `<link>` — keeps the project's existing
+  no-external-runtime-deps posture (image cache SW, no calls beyond the Atlas Academy API).
+  inkgames' own display face, `RuderPlakatLL`, is a **paid Lineto license — never use or embed it**.
+- **`.eyebrow`**, **`.btn`/`.btn--primary`/`.btn--secondary`**, **`.reveal`/`.reveal.is-visible`** —
+  reusable utilities in `base.css`. `.reveal` is wired up by `scrollReveal.ts` (`motion`'s `inView`,
+  not a hand-rolled `IntersectionObserver` — unlike the tilt math, this is a generic solved problem
+  and `motion` was already an installed, unused dependency).
+- **Home hero's floating decorations** (`home.css`, `home.ts`) are this app's own `faceIcon`
+  thumbnails (real servant data, randomly sampled each load) — **not** copies of inkgames' actual
+  icon art (their proprietary game assets). Placement is fixed/hand-authored CSS
+  (`.hero__float:nth-of-type(n)`); only _which_ servants appear is randomized in JS. Idle motion is
+  a CSS keyframe; the pointer-follow nudge is `heroParallax.ts` — a deliberately tiny, separate
+  sibling to `TiltController`, not a reuse of it (one pair of shared `--hero-pointer-x/y` custom
+  properties on the hero container, no rotation, no per-card math).
+
+**Hard-won lesson — never gate a functional step behind an animation's promise.** The Home⇄Gallery
+route crossfade originally did `animate(outlet, {opacity:[1,0]}).then(() => { swap(); animate(...) })`
+— i.e. the actual page swap waited for the fade-out animation to finish. This hung _forever_ in one
+real test environment: `motion`'s `animate()` resolves via the Web Animations API, and a WAAPI
+`.finished` promise does not resolve while its tab/pane isn't visible/compositing (confirmed
+directly — a bare `el.animate(...).finished` call hung 30+ seconds under that condition). The same
+class of freeze can happen in a real browser too (a user alt-tabbing away mid-click), not just in a
+test sandbox. Fixed by making the swap **always synchronous** — `teardownCurrentPage?.(); render()`
+runs immediately on every route change — and demoting the crossfade to a fire-and-forget
+`animate()` call _after_ the swap that nothing else depends on. Apply this rule to any future
+animation: if code after an `animate()`/`inView()` call needs to run for the app to keep working,
+don't put it in a `.then()` — run it first, animate second.
 
 ---
 
@@ -243,6 +333,7 @@ been observed to be slow/flaky under heavy repeated testing in some environments
 taken mid-load can look "broken" (partial image, wrong size, apparent ghosting) when the code is
 actually fine and the image just hadn't finished loading yet. Before concluding an effect is
 buggy:
+
 1. Check `img.complete` / `img.naturalWidth` (or wait a few seconds and re-screenshot) before
    trusting a "broken-looking" render.
 2. If the CDN seems unreliable in-session, build a small standalone HTML file referencing
@@ -254,13 +345,21 @@ buggy:
 4. For anything involving `TiltController`/parallax, explicitly test pointer positions near all
    four corners of a card, not just a gentle hover near center — clipping and edge-case math
    errors mostly show up only at the extremes.
+5. If something that should have finished animating/transitioning appears "stuck" (a CSS
+   transition sitting at its start value, an `animate()` call whose `.then()` never fires), check
+   whether the pane is actually visible/compositing before assuming it's a code bug — confirmed
+   directly in this project that CSS transitions and WAAPI-backed `animate()` calls both stall
+   indefinitely on a non-compositing tab. Test with a raw `el.animate(...).finished` promise (or
+   just read the _synchronous_ state your code produced — e.g. did the DOM actually swap, ignoring
+   whether the fade looks right) rather than concluding the feature is broken.
 
 ## Deployment
 
-Static build (`npm run build` → `dist/`), no server/secrets required — deploy target is
-Cloudflare Pages (unlimited free bandwidth, zero-config SPA fallback). Build command
-`npm run build`, output directory `dist`. Not yet deployed — creating a GitHub repo and hooking
-up Cloudflare Pages both need the user's explicit go-ahead when that time comes.
+Static build (`npm run build` → `dist/`), no server/secrets required. Deployed to **Cloudflare
+Workers static assets** (not Pages) — `wrangler.toml` sets `[assets] directory = "./dist"`. No Git
+integration/auto-deploy is configured; redeploying after a change is a manual
+`npx wrangler deploy` (or the equivalent manual trigger in the Cloudflare dashboard's Deployments
+tab) — requires Node.js v22+ locally for the Wrangler CLI.
 
 ## Git Workflow
 

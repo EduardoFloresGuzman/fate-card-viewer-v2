@@ -11,6 +11,7 @@ export function renderCardGrid(
   servants: ServantSummary[],
   getEffectTier: (servant: ServantSummary) => EffectTier,
   onSelect: (servant: ServantSummary) => void,
+  getInitialAscension?: (servant: ServantSummary) => number,
 ): void {
   const previousHandles = handlesByContainer.get(container);
   previousHandles?.forEach((handle) => handle.destroy());
@@ -19,7 +20,12 @@ export function renderCardGrid(
   container.className = "card-grid";
 
   const handles: CardHandle[] = servants.map((servant) => {
-    const handle = createCard(servant, getEffectTier(servant), onSelect);
+    const handle = createCard(
+      servant,
+      getEffectTier(servant),
+      onSelect,
+      getInitialAscension?.(servant),
+    );
     container.appendChild(handle.element);
     return handle;
   });

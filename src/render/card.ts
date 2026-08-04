@@ -14,6 +14,7 @@ export function createCard(
   servant: ServantSummary,
   effectTier: EffectTier,
   onSelect: (servant: ServantSummary) => void,
+  initialAscension = 1,
 ): CardHandle {
   const frame = document.createElement("div");
   frame.className = "card-frame";
@@ -31,7 +32,7 @@ export function createCard(
 
   const artWrap = document.createElement("div");
   artWrap.className = "card__art-wrap";
-  renderArt(artWrap, servant, effectTier, 1);
+  renderArt(artWrap, servant, effectTier, initialAscension);
 
   const shine = document.createElement("div");
   shine.className = `card__shine ${effectClassName(effectTier)}`;
@@ -71,7 +72,7 @@ export function createCard(
       button.className = "card__ascension-btn";
       button.textContent = String(stage);
       button.setAttribute("aria-label", `Ascension ${stage} art`);
-      button.classList.toggle("is-selected", stage === 1);
+      button.classList.toggle("is-selected", stage === initialAscension);
       button.addEventListener("click", (event) => {
         // Ascension buttons sit on top of the card's own click-to-open-detail handler.
         event.stopPropagation();

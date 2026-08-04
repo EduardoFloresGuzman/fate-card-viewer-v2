@@ -1,4 +1,6 @@
 @import "./base.css";
+@import "./nav.css";
+@import "./home.css";
 @import "./cards/holo.css";
 @import "./cards/cosmos.css";
 @import "./cards/radiant.css";

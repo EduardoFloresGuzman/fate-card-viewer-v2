@@ -55,6 +55,15 @@ export function resolveEffectTier(selection: EffectSelection, rarity: number): E
   return selection === "auto" ? rarityToEffectTier(rarity) : selection;
 }
 
+/**
+ * A uniformly random tier for the home page's "pull" reveal. Excludes "basic" by default — it
+ * renders no shine layer at all, which would make a chunk of pulls feel like nothing happened.
+ */
+export function pickRandomEffectTier(excludeBasic = true): EffectTier {
+  const pool = excludeBasic ? EFFECT_TIERS.filter((tier) => tier !== "basic") : EFFECT_TIERS;
+  return pool[Math.floor(Math.random() * pool.length)]!;
+}
+
 const CLASS_ACCENT_COLORS: Record<string, string> = {
   saber: "#2b6cb0",
   archer: "#2f855a",

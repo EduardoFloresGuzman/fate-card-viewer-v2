@@ -1,0 +1,174 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(2rem, 5vw, 4rem);
+  min-height: 70vh;
+  padding: var(--space-section) clamp(1rem, 4vw, 2.5rem);
+  overflow: hidden;
+}
+
+.hero__floats {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero__float {
+  position: absolute;
+  width: 3rem;
+  height: 3rem;
+  transform: translate(
+    calc(var(--hero-pointer-x, 0) * var(--float-parallax, 10px)),
+    calc(var(--hero-pointer-y, 0) * var(--float-parallax, 10px))
+  );
+  transition: transform 0.2s ease-out;
+}
+
+.hero__float-inner {
+  width: 100%;
+  height: 100%;
+  animation: hero-float 8s ease-in-out infinite;
+  animation-delay: var(--float-delay, 0s);
+  filter: drop-shadow(0 0 0.6rem rgba(255, 123, 214, 0.25));
+}
+
+.hero__float img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.85;
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--float-rotate, 0deg));
+  }
+  50% {
+    transform: translateY(-14px) rotate(calc(var(--float-rotate, 0deg) * -1));
+  }
+}
+
+.hero__float:nth-of-type(1) {
+  top: 10%;
+  left: 4%;
+  width: 3.4rem;
+  height: 3.4rem;
+  --float-parallax: 14px;
+}
+.hero__float:nth-of-type(1) .hero__float-inner {
+  --float-delay: 0s;
+  --float-rotate: 6deg;
+}
+
+.hero__float:nth-of-type(2) {
+  top: 58%;
+  left: 3%;
+  width: 2.4rem;
+  height: 2.4rem;
+  --float-parallax: 22px;
+}
+.hero__float:nth-of-type(2) .hero__float-inner {
+  --float-delay: 1.1s;
+  --float-rotate: -8deg;
+}
+
+.hero__float:nth-of-type(3) {
+  top: 82%;
+  left: 15%;
+  width: 2.8rem;
+  height: 2.8rem;
+  --float-parallax: 10px;
+}
+.hero__float:nth-of-type(3) .hero__float-inner {
+  --float-delay: 2.3s;
+  --float-rotate: 10deg;
+}
+
+.hero__float:nth-of-type(4) {
+  top: 14%;
+  right: 6%;
+  width: 3.1rem;
+  height: 3.1rem;
+  --float-parallax: 18px;
+}
+.hero__float:nth-of-type(4) .hero__float-inner {
+  --float-delay: 0.6s;
+  --float-rotate: -6deg;
+}
+
+.hero__float:nth-of-type(5) {
+  top: 46%;
+  right: 3%;
+  width: 2.2rem;
+  height: 2.2rem;
+  --float-parallax: 26px;
+}
+.hero__float:nth-of-type(5) .hero__float-inner {
+  --float-delay: 1.8s;
+  --float-rotate: 9deg;
+}
+
+.hero__float:nth-of-type(6) {
+  top: 76%;
+  right: 13%;
+  width: 2.6rem;
+  height: 2.6rem;
+  --float-parallax: 12px;
+}
+.hero__float:nth-of-type(6) .hero__float-inner {
+  --float-delay: 3s;
+  --float-rotate: -10deg;
+}
+
+.hero__float:nth-of-type(7) {
+  top: 92%;
+  left: 46%;
+  width: 2rem;
+  height: 2rem;
+  --float-parallax: 16px;
+}
+.hero__float:nth-of-type(7) .hero__float-inner {
+  --float-delay: 0.3s;
+  --float-rotate: 7deg;
+}
+
+.hero__text {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+}
+
+.hero__heading {
+  margin: 0.75rem 0 1.5rem;
+  font-family: var(--font-display);
+  font-size: var(--font-size-hero);
+  line-height: 0.95;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hero__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.hero__card-zone {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.hero__card-mount {
+  min-height: 1px;
+}

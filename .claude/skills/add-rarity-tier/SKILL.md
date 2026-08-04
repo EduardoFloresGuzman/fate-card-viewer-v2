@@ -34,6 +34,7 @@ bugs.
 ## Fixing a tier that "looks wrong"
 
 Diagnose by symptom:
+
 - **Invisible / no visible change from basic**: almost always a blend-mode problem. `hue` only
   shows where the backdrop has saturation — switch to `color`. Also check the browser console
   and computed `background-image` isn't `"none"` — a `calc()` type error (e.g. percentage ×
