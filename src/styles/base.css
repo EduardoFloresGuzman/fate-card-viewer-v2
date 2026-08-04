@@ -292,8 +292,17 @@ body {
 /* ---------- Card ---------- */
 
 .card-frame {
-  perspective: 1200px;
-  /* Skip layout/paint work entirely for off-screen cards — cheap insurance for a 400+ card grid. */
+  /* This is the ONLY perspective source for the tilt — .card used to also set its own
+     perspective(1000px) inside its transform, which doesn't average with this one, it *stacks*
+     a second, closer 3D projection on top of it. That double-perspective was compounding the
+     foreshortening far beyond what either alone would produce: at extreme rotation angles, a
+     tilted flat plane's far edge naturally projects smaller than its resting rectangle (true 3D
+     perspective, not a bug) — but the stacked perspective made that gap much more pronounced than
+     it needed to be. Bumped from 1200px to 1800px (a more distant "camera") on top of removing
+     the duplicate, which flattens the projection further and visibly shrinks the gap at the
+     pointer-range extremes.
+     Skip layout/paint work entirely for off-screen cards — cheap insurance for a 400+ card grid. */
+  perspective: 1800px;
   content-visibility: auto;
   contain-intrinsic-size: 280px 392px;
 }
@@ -308,7 +317,7 @@ body {
   box-shadow:
     0 10px 25px -10px rgba(0, 0, 0, 0.6),
     0 0 0 1px var(--border);
-  transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+  transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
   transform-style: preserve-3d;
   transition:
     --rotate-x 0.6s cubic-bezier(0.22, 1, 0.36, 1),

@@ -138,6 +138,20 @@ actually needs containment), leaving `.hero` itself unclipped, plus extra paddin
 add a new clipping ancestor around the hero card, re-check all four extreme pointer corners
 before calling it done — this exact bug doesn't show at gentle angles, only the extremes.
 
+**Never stack two `perspective` sources on the same tilted element.** A _separate_, more visible
+issue than the clipping above: at extreme tilt angles a visible gap (background/floating icons
+showing through) appeared right at the card's near corner — this is real 3D perspective
+foreshortening (a plane rotated away from the viewer projects smaller on its far side than its
+resting rectangle, so it stops fully covering that corner) and is inherent to _any_ 3D tilt effect,
+not fixable by making a container bigger. But it was much more pronounced than it should have
+been, because `.card`'s own `transform` used to _also_ set `perspective(1000px)` as its first
+function, stacking a second, closer 3D projection on top of `.card-frame`'s ancestor
+`perspective: 1200px` property — these don't average, they compound. Fixed by keeping exactly one
+perspective source (`.card-frame`'s `perspective` property, bumped to `1800px` — a more distant
+"camera" flattens the projection further) and removing the redundant `perspective()` function from
+`.card`'s own `transform`. Confirmed directly: the same ~14° rotation that used to show an obvious
+triangular gap at the corner now shows only a faint, expected sliver.
+
 Below the hero, `home.ts` renders six more sections in order, separated by animated
 `.section-divider`s (see "Animation library" below) and alternating a `.section--tinted`
 background for a zebra rhythm, all using the same `.eyebrow`/`.section-heading`/`.reveal`
