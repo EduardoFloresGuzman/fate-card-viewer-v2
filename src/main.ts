@@ -1,6 +1,6 @@
 import "@fontsource/anton/latin-400.css";
 import "./styles/index.css";
-import { animate } from "motion";
+import { gsap } from "gsap";
 import { renderGalleryPage } from "./pages/gallery.ts";
 import { renderHomePage } from "./pages/home.ts";
 import { registerServiceWorker } from "./registerServiceWorker.ts";
@@ -31,16 +31,16 @@ onRouteChange((route) => {
   }
 
   // The swap itself is always synchronous — it must never be gated behind an animation promise.
-  // motion's `animate()` resolves via the Web Animations API, which browsers can suspend
-  // indefinitely for a backgrounded/non-compositing tab (confirmed directly: a WAAPI `.finished`
-  // promise hung for 30s+ in that state), so awaiting it before swapping would risk the page
-  // getting stuck showing the previous route forever. The fade is purely cosmetic and runs
-  // fire-and-forget, after the swap, never before it.
+  // A WAAPI-backed `.finished` promise can hang indefinitely on a backgrounded/non-compositing
+  // tab (confirmed directly: 30s+ hang under that condition), so awaiting one before swapping
+  // would risk the page getting stuck showing the previous route forever. GSAP's `gsap.to()` is
+  // callback-based rather than promise-gated, but the same rule still applies: fire the fade
+  // after the swap, fire-and-forget, never make the swap depend on it finishing.
   teardownCurrentPage?.();
   teardownCurrentPage = PAGE_RENDERERS[route](outlet);
 
   if (!isFirstRender && !prefersReducedMotion()) {
-    animate(outlet, { opacity: [0, 1] }, { duration: 0.2 });
+    gsap.fromTo(outlet, { opacity: 0 }, { opacity: 1, duration: 0.2 });
   }
   isFirstRender = false;
 });

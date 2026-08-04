@@ -34,20 +34,20 @@ fate-card-viewer-v2/
 │   │   ├── pointerTilt.ts      # Pure computeTilt() math + TiltController (pointer/gyro → CSS vars)
 │   │   ├── heroParallax.ts     # Lightweight hero-section pointer nudge — NOT TiltController, see below
 │   │   ├── motionPreference.ts # prefersReducedMotion() — the one place every animation checks this
-│   │   └── scrollReveal.ts     # motion `inView` → toggles `.is-visible` on `.reveal` elements
+│   │   └── scrollReveal.ts     # GSAP ScrollTrigger-driven `.reveal` entrance animations
 │   ├── render/
 │   │   ├── card.ts             # Builds one card's DOM (incl. the two-layer diorama variant)
 │   │   ├── cardGrid.ts         # Renders/replaces a grid of cards, owns TiltController lifecycle
 │   │   ├── detailModal.ts      # Click-to-expand skill/NP detail panel (live per-servant fetch)
 │   │   └── format.ts           # classLabel/starString/effectClassName display helpers
 │   ├── pages/
-│   │   ├── home.ts             # Hero + randomizer + About/Creator sections — see Routing & Pages
+│   │   ├── home.ts             # Hero + randomizer + About/Facts/Highlights — see Routing & Pages
 │   │   └── gallery.ts          # The filterable grid (search/rarity/class/effect)
-│   ├── creatorInfo.ts           # Static "about the creator" content — see note below
+│   ├── factGenerators.ts        # Pure: random roster-wide facts + servant "superlative" spotlights
 │   ├── styles/
 │   │   ├── base.css            # Tokens, reusable chrome utilities, card frame/tilt/glare plumbing
 │   │   ├── nav.css              # Shared site nav bar
-│   │   ├── home.css             # Hero + About/Creator section layout + floating decorative icons
+│   │   ├── home.css             # Hero + About/Facts/Highlights layout + floating decorative icons
 │   │   ├── index.css           # Aggregates base/nav/home.css + every cards/*.css
 │   │   └── cards/
 │   │       ├── holo.css, cosmos.css, radiant.css, rainbow.css, gold.css, galaxy.css
@@ -124,13 +124,20 @@ automatically safe with zero new bookkeeping). `createCard()` takes an optional 
 `initialAscension` param (default `1`, so gallery's call site is unaffected) so the hero card can
 open on the randomly-picked stage instead of always ascension 1.
 
-Below the hero, `home.ts` also renders an **About** section (project description/stats) and a
-**Creator** section (who built this + a few featured repos), both using the same `.eyebrow`/
-`.section-heading`/`.reveal` utilities as the hero. `creatorInfo.ts` holds this content as static
-data — it was sourced once from the public GitHub API (`gh api users/<username>`), not fetched
-live client-side, since it's stable portfolio content and a live fetch would add a second external
-runtime dependency plus expose the site's visitors to the unauthenticated GitHub API's shared
-60-req/hour-per-IP limit. Update `creatorInfo.ts` by hand if this content needs to change.
+Below the hero, `home.ts` renders three more sections, all using the same `.eyebrow`/
+`.section-heading`/`.reveal` utilities as the hero:
+
+- **About** — static project description + stats (servant count, holo finish count, etc.).
+- **Facts** ("By The Numbers") and **Highlights** ("Roster Highlights") — both **randomly
+  re-rolled on every Home mount** from `factGenerators.ts`, a pool of pure functions computing
+  real stats from the loaded roster (highest ATK/HP, most/rarest class, 5★ count, a random 5★
+  servant, a wildcard pick, etc.) — never fabricated trivia. `pickRandomRosterFacts`/
+  `pickRandomServantHighlights` sample a handful of these each render, so the page shows different
+  facts on every visit. These two sections are built as empty shells up front (`buildFactsSection`/
+  `buildHighlightsSection`) and populated once the roster finishes loading (mirrors the existing
+  `populateFloatingIcons` pattern) — after populating, call `initScrollReveal()` again to bind the
+  newly-added `.reveal` elements and `refreshScrollReveal()` so ScrollTrigger recalculates trigger
+  positions for the now-taller document.
 
 ---
 
@@ -259,30 +266,67 @@ holo cards themselves are still the only place color explodes.
   (`@fontsource/anton/latin-400.css`), not a Google Fonts `<link>` — keeps the project's existing
   no-external-runtime-deps posture (image cache SW, no calls beyond the Atlas Academy API).
   inkgames' own display face, `RuderPlakatLL`, is a **paid Lineto license — never use or embed it**.
-- **`.eyebrow`**, **`.btn`/`.btn--primary`/`.btn--secondary`**, **`.reveal`/`.reveal.is-visible`** —
-  reusable utilities in `base.css`. `.reveal` is wired up by `scrollReveal.ts` (`motion`'s `inView`,
-  not a hand-rolled `IntersectionObserver` — unlike the tilt math, this is a generic solved problem
-  and `motion` was already an installed, unused dependency).
+- **`.eyebrow`**, **`.btn`/`.btn--primary`/`.btn--secondary`**, **`.reveal`** — reusable utilities
+  in `base.css`. `.reveal` elements are animated by `scrollReveal.ts` via **GSAP + ScrollTrigger**
+  (see "Animation library" below) — GSAP sets the actual opacity/transform/filter directly as
+  inline styles, so there's no CSS `.is-visible`-class-toggle step to keep in sync; `.reveal`'s
+  only CSS is a baseline `opacity: 0` to avoid a pre-JS flash.
 - **Home hero's floating decorations** (`home.css`, `home.ts`) are this app's own `faceIcon`
-  thumbnails (real servant data, randomly sampled each load) — **not** copies of inkgames' actual
-  icon art (their proprietary game assets). Placement is fixed/hand-authored CSS
-  (`.hero__float:nth-of-type(n)`); only _which_ servants appear is randomized in JS. Idle motion is
-  a CSS keyframe; the pointer-follow nudge is `heroParallax.ts` — a deliberately tiny, separate
-  sibling to `TiltController`, not a reuse of it (one pair of shared `--hero-pointer-x/y` custom
-  properties on the hero container, no rotation, no per-card math).
+  thumbnails (real servant data, randomly sampled each load, currently 24 of them) — **not**
+  copies of inkgames' actual icon art (their proprietary game assets). Unlike an earlier version of
+  this file which hand-authored one `nth-of-type` CSS rule per icon (fine for ~7, unworkable once
+  the count grew), placement is now **JS-computed**: `generateFloatPositions()` scatters `count`
+  icons across a jittered grid (even coverage, not clumped) and writes top/left/size/rotation/delay
+  as inline styles per icon — CSS only owns the _appearance_ (the idle-bob keyframe, the pointer-
+  parallax `transform`), never specific icon positions. Idle motion is a CSS keyframe; the
+  pointer-follow nudge is `heroParallax.ts` — a deliberately tiny, separate sibling to
+  `TiltController`, not a reuse of it (one pair of shared `--hero-pointer-x/y` custom properties on
+  the hero container, no rotation, no per-card math).
+
+### Animation library — GSAP + ScrollTrigger (not `motion`)
+
+The first pass at scroll-triggered reveals used `motion` (the Motion One/Framer Motion successor)
+with a plain CSS opacity/translateY fade — it worked, but read as too subtle next to the reference
+site's dramatic, cinematic reveals. Researched free options for vanilla-JS scroll-driven animation
+(mid-2026): **GSAP's ScrollTrigger plugin is the industry-standard tool for exactly this "big
+scroll-triggered reveal" job**, and — critically — GSAP became **100% free for all use, including
+every formerly-paid plugin**, after the Webflow acquisition, removing the licensing concern that
+would have ruled it out earlier. Switched fully to GSAP and **removed `motion` as a dependency**
+entirely (it's not used anywhere in `src/` anymore) rather than running two animation libraries
+side by side for overlapping jobs.
+
+- `scrollReveal.ts` drives `.reveal`/`[data-reveal-group]` entrances (`gsap.fromTo` + a
+  `ScrollTrigger` per element/group, `once: true`, larger travel/scale/blur than the old CSS
+  version, staggered within a group for a cascading wave).
+- `home.ts`'s hero-card-pull reveal and `main.ts`'s route crossfade are one-shot, imperatively
+  triggered animations — `gsap.fromTo()`/`gsap.to()`, not scroll-driven — matching GSAP's own
+  "tween vs. ScrollTrigger" split rather than forcing everything through one API shape.
+- **Reduced motion** is still checked once per call site via `motionPreference.ts`'s
+  `prefersReducedMotion()` (kept from the `motion` era, provider-agnostic) — when true,
+  `scrollReveal.ts` uses `gsap.set(...)` to jump straight to the end state and skips creating a
+  `ScrollTrigger` at all, rather than creating one and immediately completing it.
+- **ScrollTrigger cleanup on page teardown is not optional.** `initScrollReveal()` returns a
+  cleanup function that kills only the `ScrollTrigger` instances _that call_ created (tracked in a
+  local array, not a global kill-everything call) — `home.ts` collects one per `initScrollReveal()`
+  call (initial + once per deferred section) and calls all of them in its teardown. Skipping this
+  would leave `ScrollTrigger` instances bound to now-detached DOM elements permanently registered,
+  still listening to scroll/resize after the user navigates away — GSAP has no automatic
+  garbage-collection hook for this, unlike a plain `IntersectionObserver` disconnecting when its
+  target is removed.
 
 **Hard-won lesson — never gate a functional step behind an animation's promise.** The Home⇄Gallery
 route crossfade originally did `animate(outlet, {opacity:[1,0]}).then(() => { swap(); animate(...) })`
 — i.e. the actual page swap waited for the fade-out animation to finish. This hung _forever_ in one
-real test environment: `motion`'s `animate()` resolves via the Web Animations API, and a WAAPI
-`.finished` promise does not resolve while its tab/pane isn't visible/compositing (confirmed
-directly — a bare `el.animate(...).finished` call hung 30+ seconds under that condition). The same
-class of freeze can happen in a real browser too (a user alt-tabbing away mid-click), not just in a
-test sandbox. Fixed by making the swap **always synchronous** — `teardownCurrentPage?.(); render()`
-runs immediately on every route change — and demoting the crossfade to a fire-and-forget
-`animate()` call _after_ the swap that nothing else depends on. Apply this rule to any future
-animation: if code after an `animate()`/`inView()` call needs to run for the app to keep working,
-don't put it in a `.then()` — run it first, animate second.
+real test environment: a WAAPI-backed `.finished` promise does not resolve while its tab/pane isn't
+visible/compositing (confirmed directly — a bare `el.animate(...).finished` call hung 30+ seconds
+under that condition). The same class of freeze can happen in a real browser too (a user
+alt-tabbing away mid-click), not just in a test sandbox. Fixed by making the swap **always
+synchronous** — `teardownCurrentPage?.(); render()` runs immediately on every route change — and
+demoting the crossfade to a fire-and-forget `gsap.fromTo()` call _after_ the swap that nothing else
+depends on. This rule survived the GSAP migration unchanged (GSAP tweens are callback-based, not
+promise-gated, so it's structurally safer now — but the rule still applies to anything that awaits
+one): if code after an animation call needs to run for the app to keep working, don't wait on the
+animation to run it — run it first, animate second.
 
 ---
 

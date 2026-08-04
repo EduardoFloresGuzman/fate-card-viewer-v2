@@ -126,17 +126,11 @@
   border: 1px solid var(--border);
 }
 
+/* GSAP (scrollReveal.ts) animates the actual opacity/transform/filter via inline styles set
+   directly on the element — this is only a pre-JS baseline so there's no flash of full-opacity
+   content in the instant before the script runs. */
 .reveal {
   opacity: 0;
-  transform: translateY(1.25rem);
-  transition:
-    opacity 0.6s ease,
-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
 }
 
 .section-heading {
@@ -577,10 +571,9 @@ body {
     transition: none;
   }
 
-  .reveal {
-    transition: none;
-  }
-
+  /* .reveal's actual opacity/transform is set inline by GSAP (scrollReveal.ts), which checks
+     prefersReducedMotion() itself and jumps straight to the end state — no CSS override needed
+     here. .hero__float-inner's idle bob is a plain CSS keyframe, so it still needs one. */
   .hero__float-inner {
     animation: none;
   }
