@@ -1,23 +1,41 @@
 import { gsap } from "gsap";
+import {
+  classAccentColor,
+  EFFECT_SELECTION_OPTIONS,
+  type EffectTier,
+} from "../api/rarityEffects.ts";
 import type { ServantSummary } from "../api/types.ts";
 import {
+  getClassBreakdown,
   pickRandomRosterFacts,
   pickRandomServantHighlights,
+  type ClassBreakdown,
   type RosterFact,
   type ServantHighlight,
 } from "../factGenerators.ts";
+import { attachHoverLift } from "../effects/hoverLift.ts";
 import { initHeroParallax } from "../effects/heroParallax.ts";
 import { prefersReducedMotion } from "../effects/motionPreference.ts";
 import { initScrollReveal, refreshScrollReveal } from "../effects/scrollReveal.ts";
+import { initSectionDividers } from "../effects/sectionDividers.ts";
 import { pickRandomPull } from "../randomPull.ts";
 import { renderCardGrid } from "../render/cardGrid.ts";
 import { openDetailModal } from "../render/detailModal.ts";
+import { classLabel, effectClassName } from "../render/format.ts";
 import { navigate } from "../router.ts";
 import { REGION, subscribeRoster, type RosterState } from "../servantStore.ts";
 
 const FLOAT_ICON_COUNT = 24;
 const FACT_COUNT = 6;
 const HIGHLIGHT_COUNT = 3;
+const MARQUEE_ICON_COUNT = 16;
+/** The 6 color-foil shine tiers — "basic" has no shine to showcase, "diorama" is a wholly
+ * different two-layer DOM structure that doesn't fit this flat-swatch format. */
+const HOLO_SWATCH_TIERS: Array<{ value: EffectTier; label: string }> =
+  EFFECT_SELECTION_OPTIONS.filter(
+    (option): option is { value: EffectTier; label: string } =>
+      option.value !== "auto" && option.value !== "basic" && option.value !== "diorama",
+  );
 
 /** Renders the hero/randomizer landing page into `mount`. Returns a teardown function. */
 export function renderHomePage(mount: HTMLElement): () => void {
@@ -26,13 +44,25 @@ export function renderHomePage(mount: HTMLElement): () => void {
   let iconsPopulated = false;
   let factsPopulated = false;
   let highlightsPopulated = false;
+  let classesPopulated = false;
+  let marqueePopulated = false;
   const revealCleanups: Array<() => void> = [];
+  const hoverCleanups: Array<() => void> = [];
 
   mount.replaceChildren(
     buildHero(),
+    buildDivider(),
     buildAboutSection(),
+    buildDivider(),
     buildFactsSection(),
+    buildDivider(),
     buildHighlightsSection(),
+    buildDivider(),
+    buildClassRosterSection(),
+    buildDivider(),
+    buildMarqueeSection(),
+    buildDivider(),
+    buildHoloGallerySection(),
   );
 
   const heroSection = required(
@@ -62,6 +92,11 @@ export function renderHomePage(mount: HTMLElement): () => void {
 
   const unsubscribe = subscribeRoster((state) => handleRosterState(state));
   revealCleanups.push(initScrollReveal(mount));
+  revealCleanups.push(initSectionDividers(mount));
+
+  // Static content — doesn't depend on the roster, so it's populated immediately rather than
+  // deferred like the data-driven sections below.
+  populateHoloGallery();
 
   function handleRosterState(state: RosterState): void {
     pullButton.disabled = state.status !== "ready";
@@ -79,6 +114,8 @@ export function renderHomePage(mount: HTMLElement): () => void {
       populateFloatingIcons(servants);
       populateFactsSection(servants);
       populateHighlightsSection(servants);
+      populateClassRosterSection(servants);
+      populateMarquee(servants);
     }
   }
 
@@ -100,8 +137,10 @@ export function renderHomePage(mount: HTMLElement): () => void {
     if (!grid) return;
     const facts = pickRandomRosterFacts(roster, FACT_COUNT);
     grid.replaceChildren(...facts.map(buildFactTile));
-    revealCleanups.push(initScrollReveal(mount));
-    refreshScrollReveal();
+    bindReveal();
+    for (const tile of grid.querySelectorAll<HTMLElement>(".fact-tile")) {
+      hoverCleanups.push(attachHoverLift(tile));
+    }
   }
 
   function populateHighlightsSection(roster: ServantSummary[]): void {
@@ -111,6 +150,52 @@ export function renderHomePage(mount: HTMLElement): () => void {
     if (!grid) return;
     const highlights = pickRandomServantHighlights(roster, HIGHLIGHT_COUNT);
     grid.replaceChildren(...highlights.map(buildHighlightCard));
+    bindReveal();
+    for (const card of grid.querySelectorAll<HTMLElement>(".highlight-card")) {
+      hoverCleanups.push(attachHoverLift(card));
+    }
+  }
+
+  function populateClassRosterSection(roster: ServantSummary[]): void {
+    if (classesPopulated) return;
+    classesPopulated = true;
+    const grid = mount.querySelector<HTMLElement>(".class-roster__grid");
+    if (!grid) return;
+    const breakdown = getClassBreakdown(roster);
+    grid.replaceChildren(...breakdown.map(buildClassTile));
+    bindReveal();
+    for (const tile of grid.querySelectorAll<HTMLElement>(".class-tile")) {
+      hoverCleanups.push(attachHoverLift(tile));
+    }
+  }
+
+  function populateMarquee(roster: ServantSummary[]): void {
+    if (marqueePopulated) return;
+    marqueePopulated = true;
+    const track = mount.querySelector<HTMLElement>(".marquee__track");
+    if (!track) return;
+    const withIcons = roster.filter((s) => s.faceIcon);
+    const sample = sampleServants(withIcons, MARQUEE_ICON_COUNT);
+    if (sample.length === 0) return;
+    const icons = sample.map(buildMarqueeIcon);
+    // Duplicated so a translateX(-50%) loop is seamless — at the halfway point the track shows
+    // exactly the same icons it started with.
+    track.replaceChildren(...icons, ...icons.map((el) => el.cloneNode(true) as HTMLElement));
+  }
+
+  function populateHoloGallery(): void {
+    const grid = mount.querySelector<HTMLElement>(".holo-gallery__grid");
+    if (!grid) return;
+    grid.replaceChildren(
+      ...HOLO_SWATCH_TIERS.map((tier) => buildHoloSwatch(tier.value, tier.label)),
+    );
+    for (const swatch of grid.querySelectorAll<HTMLElement>(".holo-swatch")) {
+      hoverCleanups.push(attachHoverLift(swatch));
+    }
+  }
+
+  /** Re-runs reveal binding + a ScrollTrigger refresh after content is added post-load — see scrollReveal.ts. */
+  function bindReveal(): void {
     revealCleanups.push(initScrollReveal(mount));
     refreshScrollReveal();
   }
@@ -137,6 +222,7 @@ export function renderHomePage(mount: HTMLElement): () => void {
     unsubscribe();
     stopParallax?.();
     for (const stop of revealCleanups) stop();
+    for (const stop of hoverCleanups) stop();
     renderCardGrid(
       heroCardMount,
       [],
@@ -275,6 +361,62 @@ function buildHighlightCard(highlight: ServantHighlight): HTMLElement {
   return card;
 }
 
+function buildClassTile(entry: ClassBreakdown): HTMLElement {
+  const tile = document.createElement("div");
+  tile.className = "class-tile reveal";
+  tile.style.setProperty("--class-color", classAccentColor(entry.className));
+
+  const monogram = document.createElement("span");
+  monogram.className = "class-tile__monogram";
+  monogram.textContent = classLabel(entry.className).charAt(0);
+
+  const name = document.createElement("span");
+  name.className = "class-tile__name";
+  name.textContent = classLabel(entry.className);
+
+  const count = document.createElement("span");
+  count.className = "class-tile__count";
+  count.textContent = `${entry.count} servant${entry.count === 1 ? "" : "s"}`;
+
+  tile.append(monogram, name, count);
+  return tile;
+}
+
+function buildHoloSwatch(tier: EffectTier, label: string): HTMLElement {
+  const swatch = document.createElement("div");
+  swatch.className = "holo-swatch reveal";
+
+  const shine = document.createElement("div");
+  shine.className = `card__shine ${effectClassName(tier)}`;
+
+  const swatchLabel = document.createElement("span");
+  swatchLabel.className = "holo-swatch__label";
+  swatchLabel.textContent = label;
+
+  swatch.append(shine, swatchLabel);
+  return swatch;
+}
+
+function buildMarqueeIcon(servant: ServantSummary): HTMLElement {
+  const wrap = document.createElement("div");
+  wrap.className = "marquee__icon";
+
+  const img = document.createElement("img");
+  img.src = servant.faceIcon ?? "";
+  img.alt = servant.name;
+  img.loading = "lazy";
+  img.decoding = "async";
+
+  wrap.appendChild(img);
+  return wrap;
+}
+
+function buildDivider(): HTMLElement {
+  const divider = document.createElement("div");
+  divider.className = "section-divider";
+  return divider;
+}
+
 function buildHero(): HTMLElement {
   const section = document.createElement("section");
   section.className = "hero";
@@ -284,18 +426,19 @@ function buildHero(): HTMLElement {
   section.appendChild(floats);
 
   const textZone = document.createElement("div");
-  textZone.className = "hero__text reveal";
+  textZone.className = "hero__text";
+  textZone.setAttribute("data-reveal-group", "");
 
   const eyebrow = document.createElement("p");
-  eyebrow.className = "eyebrow";
+  eyebrow.className = "eyebrow reveal";
   eyebrow.textContent = "Fate Holo Codex";
 
   const heading = document.createElement("h1");
-  heading.className = "hero__heading";
+  heading.className = "hero__heading reveal";
   heading.innerHTML = "Pull a<br>Servant<br>Card";
 
   const ctaRow = document.createElement("div");
-  ctaRow.className = "hero__cta-row";
+  ctaRow.className = "hero__cta-row reveal";
 
   const pullButton = document.createElement("button");
   pullButton.type = "button";
@@ -367,7 +510,7 @@ function buildAboutSection(): HTMLElement {
 
 function buildFactsSection(): HTMLElement {
   const section = document.createElement("section");
-  section.className = "facts";
+  section.className = "facts section--tinted";
 
   const inner = document.createElement("div");
   inner.className = "facts__inner";
@@ -406,6 +549,64 @@ function buildHighlightsSection(): HTMLElement {
 
   const grid = document.createElement("div");
   grid.className = "highlights__grid";
+  grid.setAttribute("data-reveal-group", "");
+
+  inner.append(eyebrow, heading, grid);
+  section.appendChild(inner);
+  return section;
+}
+
+function buildClassRosterSection(): HTMLElement {
+  const section = document.createElement("section");
+  section.className = "class-roster section--tinted";
+
+  const inner = document.createElement("div");
+  inner.className = "class-roster__inner";
+
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow reveal";
+  eyebrow.textContent = "Explore By Class";
+
+  const heading = document.createElement("h2");
+  heading.className = "section-heading reveal";
+  heading.textContent = "The Class Roster";
+
+  const grid = document.createElement("div");
+  grid.className = "class-roster__grid";
+  grid.setAttribute("data-reveal-group", "");
+
+  inner.append(eyebrow, heading, grid);
+  section.appendChild(inner);
+  return section;
+}
+
+function buildMarqueeSection(): HTMLElement {
+  const section = document.createElement("section");
+  section.className = "marquee-section";
+
+  const track = document.createElement("div");
+  track.className = "marquee__track";
+  section.appendChild(track);
+  return section;
+}
+
+function buildHoloGallerySection(): HTMLElement {
+  const section = document.createElement("section");
+  section.className = "holo-gallery section--tinted";
+
+  const inner = document.createElement("div");
+  inner.className = "holo-gallery__inner";
+
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow reveal";
+  eyebrow.textContent = "Every Finish";
+
+  const heading = document.createElement("h2");
+  heading.className = "section-heading reveal";
+  heading.textContent = "Holo Finish Gallery";
+
+  const grid = document.createElement("div");
+  grid.className = "holo-gallery__grid";
   grid.setAttribute("data-reveal-group", "");
 
   inner.append(eyebrow, heading, grid);

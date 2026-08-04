@@ -13,6 +13,11 @@ export interface ServantHighlight {
   stat: string;
 }
 
+export interface ClassBreakdown {
+  className: string;
+  count: number;
+}
+
 function maxBy<T>(items: T[], key: (item: T) => number): T | null {
   if (items.length === 0) return null;
   return items.reduce((best, item) => (key(item) > key(best) ? item : best));
@@ -138,4 +143,12 @@ export function pickRandomServantHighlights(
   count: number,
 ): ServantHighlight[] {
   return sampleGenerators(HIGHLIGHT_GENERATORS, servants, count);
+}
+
+/** Every class present in the roster, with its servant count, sorted most→least common. */
+export function getClassBreakdown(servants: ServantSummary[]): ClassBreakdown[] {
+  const counts = countBy(servants, (s) => s.className);
+  return [...counts.entries()]
+    .map(([className, count]) => ({ className, count }))
+    .sort((a, b) => b.count - a.count);
 }

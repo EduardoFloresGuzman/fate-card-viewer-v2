@@ -34,20 +34,22 @@ fate-card-viewer-v2/
 │   │   ├── pointerTilt.ts      # Pure computeTilt() math + TiltController (pointer/gyro → CSS vars)
 │   │   ├── heroParallax.ts     # Lightweight hero-section pointer nudge — NOT TiltController, see below
 │   │   ├── motionPreference.ts # prefersReducedMotion() — the one place every animation checks this
-│   │   └── scrollReveal.ts     # GSAP ScrollTrigger-driven `.reveal` entrance animations
+│   │   ├── scrollReveal.ts     # GSAP ScrollTrigger-driven `.reveal` entrance animations
+│   │   ├── sectionDividers.ts  # GSAP ScrollTrigger `.section-divider` scaleX draw-in (scrubbed)
+│   │   └── hoverLift.ts        # GSAP pointerenter/leave lift on content cards (facts, class tiles, etc.)
 │   ├── render/
 │   │   ├── card.ts             # Builds one card's DOM (incl. the two-layer diorama variant)
 │   │   ├── cardGrid.ts         # Renders/replaces a grid of cards, owns TiltController lifecycle
 │   │   ├── detailModal.ts      # Click-to-expand skill/NP detail panel (live per-servant fetch)
 │   │   └── format.ts           # classLabel/starString/effectClassName display helpers
 │   ├── pages/
-│   │   ├── home.ts             # Hero + randomizer + About/Facts/Highlights — see Routing & Pages
+│   │   ├── home.ts             # Hero + randomizer + 6 more sections — see Routing & Pages below
 │   │   └── gallery.ts          # The filterable grid (search/rarity/class/effect)
-│   ├── factGenerators.ts        # Pure: random roster-wide facts + servant "superlative" spotlights
+│   ├── factGenerators.ts        # Pure: random roster-wide facts, servant spotlights, class breakdown
 │   ├── styles/
 │   │   ├── base.css            # Tokens, reusable chrome utilities, card frame/tilt/glare plumbing
 │   │   ├── nav.css              # Shared site nav bar
-│   │   ├── home.css             # Hero + About/Facts/Highlights layout + floating decorative icons
+│   │   ├── home.css             # All home-page section layout + floating decorative icons
 │   │   ├── index.css           # Aggregates base/nav/home.css + every cards/*.css
 │   │   └── cards/
 │   │       ├── holo.css, cosmos.css, radiant.css, rainbow.css, gold.css, galaxy.css
@@ -124,20 +126,41 @@ automatically safe with zero new bookkeeping). `createCard()` takes an optional 
 `initialAscension` param (default `1`, so gallery's call site is unaffected) so the hero card can
 open on the randomly-picked stage instead of always ascension 1.
 
-Below the hero, `home.ts` renders three more sections, all using the same `.eyebrow`/
-`.section-heading`/`.reveal` utilities as the hero:
+Below the hero, `home.ts` renders six more sections in order, separated by animated
+`.section-divider`s (see "Animation library" below) and alternating a `.section--tinted`
+background for a zebra rhythm, all using the same `.eyebrow`/`.section-heading`/`.reveal`
+utilities as the hero:
 
-- **About** — static project description + stats (servant count, holo finish count, etc.).
-- **Facts** ("By The Numbers") and **Highlights** ("Roster Highlights") — both **randomly
-  re-rolled on every Home mount** from `factGenerators.ts`, a pool of pure functions computing
-  real stats from the loaded roster (highest ATK/HP, most/rarest class, 5★ count, a random 5★
-  servant, a wildcard pick, etc.) — never fabricated trivia. `pickRandomRosterFacts`/
-  `pickRandomServantHighlights` sample a handful of these each render, so the page shows different
-  facts on every visit. These two sections are built as empty shells up front (`buildFactsSection`/
-  `buildHighlightsSection`) and populated once the roster finishes loading (mirrors the existing
-  `populateFloatingIcons` pattern) — after populating, call `initScrollReveal()` again to bind the
-  newly-added `.reveal` elements and `refreshScrollReveal()` so ScrollTrigger recalculates trigger
-  positions for the now-taller document.
+1. **About** — static project description + stats (servant count, holo finish count, etc.).
+2. **Facts** ("By The Numbers") — 6 randomly-sampled roster-wide stats.
+3. **Highlights** ("Roster Highlights") — 3 randomly-sampled servant "superlative" spotlights.
+4. **Class Roster** ("Explore By Class") — every class present in the roster as a colored
+   monogram tile (`classAccentColor()`, the same accent map the cards themselves use) with a
+   servant count, sorted most→least common.
+5. **Marquee** — a continuously auto-scrolling strip of servant face icons (CSS `@keyframes`
+   `translateX` loop over a duplicated icon list, seamless at the `-50%` halfway point; pauses on
+   hover via `animation-play-state`).
+6. **Holo Finish Gallery** ("Every Finish") — a showcase swatch for each of the 6 color-foil
+   tiers (`holo`/`cosmos`/`radiant`/`rainbow`/`gold`/`galaxy` — `"basic"` has no shine to show,
+   `"diorama"` is a structurally different two-layer DOM shape that doesn't fit a flat swatch),
+   each auto-playing a small idle sweep across its own `--pointer-x/y/from-center/angle` custom
+   properties (see `home.css`'s `holo-demo-sweep` keyframe) so it previews continuously without
+   needing a real `TiltController` wired up for a static demo.
+
+Facts/Highlights/Class-Roster/Marquee are **randomly re-rolled on every Home mount** from
+`factGenerators.ts`, a pool of pure functions computing real stats from the loaded roster (highest
+ATK/HP, most/rarest class, 5★ count, a random 5★ servant, a wildcard pick, the full class
+breakdown, etc.) — never fabricated trivia. These sections are built as empty shells up front
+(`buildFactsSection`/`buildHighlightsSection`/`buildClassRosterSection`/`buildMarqueeSection`) and
+populated once the roster finishes loading (mirrors the pre-existing `populateFloatingIcons`
+pattern) — after populating, call `initScrollReveal()` again to bind the newly-added `.reveal`
+elements and `refreshScrollReveal()` so ScrollTrigger recalculates trigger positions for the
+now-taller document. The Holo Gallery is the one exception — it's static (doesn't depend on the
+roster), so it's populated immediately rather than deferred.
+
+Every content card added by a populate function (fact tiles, highlight cards, class tiles, holo
+swatches) also gets `attachHoverLift()` (`effects/hoverLift.ts`) — a GSAP pointerenter/leave
+lift+scale, cleaned up on page teardown alongside the reveal/divider triggers.
 
 ---
 
@@ -313,6 +336,14 @@ side by side for overlapping jobs.
   still listening to scroll/resize after the user navigates away — GSAP has no automatic
   garbage-collection hook for this, unlike a plain `IntersectionObserver` disconnecting when its
   target is removed.
+- `sectionDividers.ts` is the same pattern as `scrollReveal.ts` (per-call-created-trigger tracking,
+  a `data-*-bound` marker to stay idempotent across repeat calls, its own cleanup function) applied
+  to a different visual: `.section-divider` elements `scaleX` in with `scrub: true` (tied directly
+  to scroll position, not a one-shot reveal) rather than `once: true`.
+- `hoverLift.ts` is deliberately **not** ScrollTrigger-based — hover is a discrete
+  pointerenter/pointerleave pair, not something tied to scroll position, so it's a plain
+  `gsap.to()` per event with no `ScrollTrigger` (and therefore nothing to leak/clean up beyond the
+  two event listeners its own cleanup function removes).
 
 **Hard-won lesson — never gate a functional step behind an animation's promise.** The Home⇄Gallery
 route crossfade originally did `animate(outlet, {opacity:[1,0]}).then(() => { swap(); animate(...) })`

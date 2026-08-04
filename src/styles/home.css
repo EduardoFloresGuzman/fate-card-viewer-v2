@@ -98,7 +98,6 @@
 
 .about {
   padding: var(--space-section) clamp(1rem, 4vw, 2.5rem);
-  border-top: 1px solid var(--border);
 }
 
 .about__inner {
@@ -139,7 +138,6 @@
 
 .facts {
   padding: var(--space-section) clamp(1rem, 4vw, 2.5rem);
-  border-top: 1px solid var(--border);
 }
 
 .facts__inner {
@@ -183,7 +181,6 @@
 
 .highlights {
   padding: var(--space-section) clamp(1rem, 4vw, 2.5rem);
-  border-top: 1px solid var(--border);
 }
 
 .highlights__inner {
@@ -245,4 +242,183 @@
 .highlight-card__stat {
   color: var(--text-dim);
   font-size: 0.85rem;
+}
+
+/* ---------- Section transitions ---------- */
+
+/* Animated by sectionDividers.ts (scaleX 0→1, scroll-scrubbed) instead of a plain static
+   border — a small recurring "draw-in" motif marking the boundary between sections. */
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 clamp(1rem, 4vw, 2.5rem);
+}
+
+/* Applied to every other section for a subtle zebra rhythm — reinforces that a fixed border/
+   divider isn't the only thing separating sections as you scroll. */
+.section--tinted {
+  background: var(--bg-elevated);
+}
+
+/* ---------- Explore by class ---------- */
+
+.class-roster__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.class-roster__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.class-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg);
+  transition: border-color 0.2s ease;
+}
+
+.class-tile:hover {
+  border-color: var(--class-color, var(--accent-solid));
+}
+
+.class-tile__monogram {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: #fff;
+  background: var(--class-color, var(--accent-solid));
+  box-shadow: 0 0 0.9rem -0.1rem var(--class-color, var(--accent-solid));
+}
+
+.class-tile__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.class-tile__count {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+/* ---------- Endless servant marquee ---------- */
+
+.marquee-section {
+  overflow: hidden;
+  padding: clamp(1.5rem, 3vw, 2.5rem) 0;
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  gap: 1.25rem;
+  animation: marquee-scroll 42s linear infinite;
+}
+
+.marquee-section:hover .marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee__icon {
+  flex: 0 0 auto;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.marquee__icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- Holo finish gallery ---------- */
+
+.holo-gallery__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.holo-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.holo-swatch {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: linear-gradient(160deg, #1c1830, #0b0b12);
+  border: 1px solid var(--border);
+  /* Auto-plays a small idle sweep across the tier's own pointer-tracked custom properties — the
+     same ones TiltController normally drives from real pointer input — so each swatch previews
+     its shine continuously without needing a live tilt controller wired up for a static demo. */
+  animation: holo-demo-sweep 6s ease-in-out infinite;
+}
+
+/* This swatch has no `.card`/`.card.is-active` ancestor (it's a standalone demo, not a real
+   interactive card), so base.css's `.card.is-active .card__shine { opacity: 1; }` rule can't
+   match it — force the shine visible directly instead. */
+.holo-swatch .card__shine {
+  opacity: 1;
+}
+
+@keyframes holo-demo-sweep {
+  0%,
+  100% {
+    --pointer-x: 15%;
+    --pointer-y: 25%;
+    --pointer-from-center: 0.25;
+    --pointer-angle: 60deg;
+  }
+  50% {
+    --pointer-x: 85%;
+    --pointer-y: 75%;
+    --pointer-from-center: 0.95;
+    --pointer-angle: 240deg;
+  }
+}
+
+.holo-swatch__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.5rem 0.6rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text);
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85) 60%);
 }

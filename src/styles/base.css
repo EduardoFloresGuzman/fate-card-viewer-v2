@@ -573,8 +573,11 @@ body {
 
   /* .reveal's actual opacity/transform is set inline by GSAP (scrollReveal.ts), which checks
      prefersReducedMotion() itself and jumps straight to the end state — no CSS override needed
-     here. .hero__float-inner's idle bob is a plain CSS keyframe, so it still needs one. */
-  .hero__float-inner {
+     here. .hero__float-inner's idle bob and .marquee__track's scroll and .holo-swatch's demo
+     sweep are all plain CSS keyframes, so they still need one each. */
+  .hero__float-inner,
+  .marquee__track,
+  .holo-swatch {
     animation: none;
   }
 }
