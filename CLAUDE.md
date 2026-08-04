@@ -41,12 +41,13 @@ fate-card-viewer-v2/
 │   │   ├── detailModal.ts      # Click-to-expand skill/NP detail panel (live per-servant fetch)
 │   │   └── format.ts           # classLabel/starString/effectClassName display helpers
 │   ├── pages/
-│   │   ├── home.ts             # Hero + randomizer ("Pull a Servant") — see Routing & Pages below
+│   │   ├── home.ts             # Hero + randomizer + About/Creator sections — see Routing & Pages
 │   │   └── gallery.ts          # The filterable grid (search/rarity/class/effect)
+│   ├── creatorInfo.ts           # Static "about the creator" content — see note below
 │   ├── styles/
 │   │   ├── base.css            # Tokens, reusable chrome utilities, card frame/tilt/glare plumbing
 │   │   ├── nav.css              # Shared site nav bar
-│   │   ├── home.css             # Hero layout + floating decorative icons
+│   │   ├── home.css             # Hero + About/Creator section layout + floating decorative icons
 │   │   ├── index.css           # Aggregates base/nav/home.css + every cards/*.css
 │   │   └── cards/
 │   │       ├── holo.css, cosmos.css, radiant.css, rainbow.css, gold.css, galaxy.css
@@ -122,6 +123,14 @@ tears down the previous card before mounting the next one, so every "Pull Again"
 automatically safe with zero new bookkeeping). `createCard()` takes an optional 4th
 `initialAscension` param (default `1`, so gallery's call site is unaffected) so the hero card can
 open on the randomly-picked stage instead of always ascension 1.
+
+Below the hero, `home.ts` also renders an **About** section (project description/stats) and a
+**Creator** section (who built this + a few featured repos), both using the same `.eyebrow`/
+`.section-heading`/`.reveal` utilities as the hero. `creatorInfo.ts` holds this content as static
+data — it was sourced once from the public GitHub API (`gh api users/<username>`), not fetched
+live client-side, since it's stable portfolio content and a live fetch would add a second external
+runtime dependency plus expose the site's visitors to the unauthenticated GitHub API's shared
+60-req/hour-per-IP limit. Update `creatorInfo.ts` by hand if this content needs to change.
 
 ---
 

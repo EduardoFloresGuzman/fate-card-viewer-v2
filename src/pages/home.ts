@@ -1,5 +1,6 @@
 import { animate } from "motion";
 import type { ServantSummary } from "../api/types.ts";
+import { CREATOR, FEATURED_REPOS } from "../creatorInfo.ts";
 import { initHeroParallax } from "../effects/heroParallax.ts";
 import { prefersReducedMotion } from "../effects/motionPreference.ts";
 import { initScrollReveal } from "../effects/scrollReveal.ts";
@@ -18,7 +19,7 @@ export function renderHomePage(mount: HTMLElement): () => void {
   let hasPulledOnce = false;
   let iconsPopulated = false;
 
-  mount.replaceChildren(buildHero());
+  mount.replaceChildren(buildHero(), buildAboutSection(), buildCreatorSection());
 
   const heroSection = required(
     mount.querySelector<HTMLElement>(".hero"),
@@ -183,6 +184,126 @@ function buildHero(): HTMLElement {
   cardZone.appendChild(cardMount);
 
   section.append(textZone, cardZone);
+  return section;
+}
+
+function buildAboutSection(): HTMLElement {
+  const section = document.createElement("section");
+  section.className = "about";
+
+  const inner = document.createElement("div");
+  inner.className = "about__inner reveal";
+
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = "The Project";
+
+  const heading = document.createElement("h2");
+  heading.className = "section-heading";
+  heading.innerHTML = "A Trading Card,<br>Reimagined";
+
+  const body = document.createElement("p");
+  body.className = "about__body";
+  body.textContent =
+    "Fate Holo Codex is an interactive holographic trading-card viewer for Fate/Grand Order " +
+    "servants, inspired by the tilt-and-foil effect of poke-holo.simey.me. Every card is real " +
+    "Atlas Academy game data — full illustrations, ascension art, stats, skills, and Noble " +
+    "Phantasms — rendered with original holo finishes and a 3D parallax mode, built from " +
+    "scratch with pointer-tracked CSS, no animation library and no copied textures.";
+
+  const stats = document.createElement("ul");
+  stats.className = "about__stats";
+  const statEntries = [
+    { value: "400+", label: "servants" },
+    { value: "8", label: "holo finishes" },
+    { value: "4", label: "ascension arts each" },
+  ];
+  for (const { value, label } of statEntries) {
+    const item = document.createElement("li");
+    const strong = document.createElement("strong");
+    strong.textContent = value;
+    item.append(strong, ` ${label}`);
+    stats.appendChild(item);
+  }
+
+  inner.append(eyebrow, heading, body, stats);
+  section.appendChild(inner);
+  return section;
+}
+
+function buildCreatorSection(): HTMLElement {
+  const section = document.createElement("section");
+  section.className = "creator";
+
+  const card = document.createElement("div");
+  card.className = "creator__card reveal";
+
+  const avatar = document.createElement("img");
+  avatar.className = "creator__avatar";
+  avatar.src = CREATOR.avatarUrl;
+  avatar.alt = CREATOR.name;
+  avatar.loading = "lazy";
+  avatar.decoding = "async";
+
+  const info = document.createElement("div");
+  info.className = "creator__info";
+
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "eyebrow";
+  eyebrow.textContent = "Who Built This";
+
+  const heading = document.createElement("h2");
+  heading.className = "section-heading";
+  heading.textContent = CREATOR.name;
+
+  const bio = document.createElement("p");
+  bio.className = "creator__bio";
+  bio.textContent = CREATOR.bio;
+
+  const meta = document.createElement("p");
+  meta.className = "creator__meta";
+  meta.textContent = `${CREATOR.company} · ${CREATOR.location}`;
+
+  const githubLink = document.createElement("a");
+  githubLink.className = "btn btn--secondary";
+  githubLink.href = CREATOR.githubUrl;
+  githubLink.target = "_blank";
+  githubLink.rel = "noopener noreferrer";
+  githubLink.textContent = "View GitHub Profile";
+
+  info.append(eyebrow, heading, bio, meta, githubLink);
+  card.append(avatar, info);
+
+  const reposHeading = document.createElement("p");
+  reposHeading.className = "eyebrow creator__repos-heading reveal";
+  reposHeading.textContent = "Other Projects";
+
+  const repoGrid = document.createElement("div");
+  repoGrid.className = "creator__repo-grid";
+  for (const repo of FEATURED_REPOS) {
+    const repoCard = document.createElement("a");
+    repoCard.className = "repo-card reveal";
+    repoCard.href = repo.url;
+    repoCard.target = "_blank";
+    repoCard.rel = "noopener noreferrer";
+
+    const name = document.createElement("span");
+    name.className = "repo-card__name";
+    name.textContent = repo.name;
+
+    const desc = document.createElement("span");
+    desc.className = "repo-card__desc";
+    desc.textContent = repo.description;
+
+    const lang = document.createElement("span");
+    lang.className = "repo-card__lang";
+    lang.textContent = repo.language;
+
+    repoCard.append(name, desc, lang);
+    repoGrid.appendChild(repoCard);
+  }
+
+  section.append(card, reposHeading, repoGrid);
   return section;
 }
 

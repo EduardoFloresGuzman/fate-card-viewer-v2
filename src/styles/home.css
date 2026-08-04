@@ -172,3 +172,155 @@
 .hero__card-mount {
   min-height: 1px;
 }
+
+/* ---------- About the project ---------- */
+
+.about {
+  padding: var(--space-section) clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--border);
+}
+
+.about__inner {
+  max-width: 42rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.about__body {
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 38rem;
+  margin: 0 auto 1.5rem;
+}
+
+.about__stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.about__stats strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+/* ---------- About the creator ---------- */
+
+.creator {
+  padding: var(--space-section) clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--border);
+}
+
+.creator__card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  max-width: 56rem;
+  margin: 0 auto clamp(3rem, 6vw, 4.5rem);
+}
+
+.creator__avatar {
+  width: clamp(7rem, 14vw, 10rem);
+  height: clamp(7rem, 14vw, 10rem);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.creator__info {
+  flex: 1 1 20rem;
+}
+
+.creator__bio {
+  color: var(--text-dim);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 34rem;
+  margin: 0 0 0.5rem;
+}
+
+.creator__meta {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin: 0 0 1.25rem;
+}
+
+.creator__repos-heading {
+  max-width: 56rem;
+  margin: 0 auto 1rem;
+}
+
+.creator__repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.repo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-elevated);
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.repo-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-solid);
+}
+
+.repo-card__name {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.repo-card__desc {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.repo-card__lang {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Staggered "wave" reveal for the repo grid — cheap, no JS, each card is independently observed
+   by scrollReveal.ts but a small per-card delay reads as a deliberate cascade rather than four
+   simultaneous pops when the whole row enters the viewport together. */
+.creator__repo-grid .repo-card:nth-child(1) {
+  transition-delay: 0s;
+}
+.creator__repo-grid .repo-card:nth-child(2) {
+  transition-delay: 0.08s;
+}
+.creator__repo-grid .repo-card:nth-child(3) {
+  transition-delay: 0.16s;
+}
+.creator__repo-grid .repo-card:nth-child(4) {
+  transition-delay: 0.24s;
+}
