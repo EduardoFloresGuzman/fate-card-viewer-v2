@@ -32,7 +32,7 @@ fate-card-viewer-v2/
 │   │       └── servants.sample.json   # ~24-servant offline fallback, ServantSummary-shaped
 │   ├── effects/
 │   │   ├── pointerTilt.ts      # Pure computeTilt() math + TiltController (pointer/gyro → CSS vars)
-│   │   ├── heroParallax.ts     # Lightweight hero-section pointer nudge — NOT TiltController, see below
+│   │   ├── floatPhysics.ts     # Hand-rolled 2D drift + collision-rebound sim for hero floats
 │   │   ├── motionPreference.ts # prefersReducedMotion() — the one place every animation checks this
 │   │   ├── scrollReveal.ts     # GSAP ScrollTrigger-driven `.reveal` entrance animations
 │   │   ├── sectionDividers.ts  # GSAP ScrollTrigger `.section-divider` scaleX draw-in (scrubbed)
@@ -115,16 +115,28 @@ again" button. Neither page calls `fetchServants()` directly — this is what le
 share one fetch without either page needing to know about the other.
 
 **`home.ts`** — the "Pull a Servant" randomizer. `randomPull.ts`'s `pickRandomPull(servants)` picks
-a uniformly random servant, a random non-`"basic"` effect tier (`pickRandomEffectTier()` in
-`rarityEffects.ts` — `"basic"` renders no shine at all, which would make some pulls feel like
-nothing happened), and a random ascension stage. The result renders via the _same_
-`renderCardGrid()` gallery uses, called with a one-element array and a `.card-grid--hero` CSS
-modifier for the bigger centered presentation — this gets the exact same `TiltController`
-create/destroy cleanup gallery relies on for free (its `WeakMap<container, CardHandle[]>` already
-tears down the previous card before mounting the next one, so every "Pull Again" click is
-automatically safe with zero new bookkeeping). `createCard()` takes an optional 4th
-`initialAscension` param (default `1`, so gallery's call site is unaffected) so the hero card can
-open on the randomly-picked stage instead of always ascension 1.
+a uniformly random servant and a random ascension stage; the effect tier is **always
+`"diorama"`** — the app's signature 3D effect, deliberately not randomized, so every pull shows it
+off (falls back to the normal single-image layout automatically via `card.ts`'s `renderArt` for
+the rare servant with no `figureArtByAscension`). `rarityEffects.ts`'s `pickRandomEffectTier()`
+still exists (used to be what `pickRandomPull` called) but is currently unused — safe to repurpose
+if random-tier pulling ever comes back. The result renders via the _same_ `renderCardGrid()`
+gallery uses, called with a one-element array and a `.card-grid--hero` CSS modifier for the bigger
+centered presentation — this gets the exact same `TiltController` create/destroy cleanup gallery
+relies on for free (its `WeakMap<container, CardHandle[]>` already tears down the previous card
+before mounting the next one, so every "Pull Again" click is automatically safe with zero new
+bookkeeping). `createCard()` takes an optional 4th `initialAscension` param (default `1`, so
+gallery's call site is unaffected) so the hero card can open on the randomly-picked stage instead
+of always ascension 1.
+
+**The hero card's tilt needs an unclipped ancestor.** `.hero` used to have `overflow: hidden`
+(to contain the floating icons) — but a 3D-rotated card's rendered footprint extends past its
+resting bounding box, so at extreme tilt angles that ancestor clipped a visible corner off the
+card. Fixed by moving `overflow: hidden` down to `.hero__floats` specifically (the only thing that
+actually needs containment), leaving `.hero` itself unclipped, plus extra padding on
+`.hero__card-zone` and a larger `.card-grid--hero .card-frame` width as headroom. If you ever
+add a new clipping ancestor around the hero card, re-check all four extreme pointer corners
+before calling it done — this exact bug doesn't show at gentle angles, only the extremes.
 
 Below the hero, `home.ts` renders six more sections in order, separated by animated
 `.section-divider`s (see "Animation library" below) and alternating a `.section--tinted`
@@ -294,17 +306,19 @@ holo cards themselves are still the only place color explodes.
   (see "Animation library" below) — GSAP sets the actual opacity/transform/filter directly as
   inline styles, so there's no CSS `.is-visible`-class-toggle step to keep in sync; `.reveal`'s
   only CSS is a baseline `opacity: 0` to avoid a pre-JS flash.
-- **Home hero's floating decorations** (`home.css`, `home.ts`) are this app's own `faceIcon`
-  thumbnails (real servant data, randomly sampled each load, currently 24 of them) — **not**
-  copies of inkgames' actual icon art (their proprietary game assets). Unlike an earlier version of
-  this file which hand-authored one `nth-of-type` CSS rule per icon (fine for ~7, unworkable once
-  the count grew), placement is now **JS-computed**: `generateFloatPositions()` scatters `count`
-  icons across a jittered grid (even coverage, not clumped) and writes top/left/size/rotation/delay
-  as inline styles per icon — CSS only owns the _appearance_ (the idle-bob keyframe, the pointer-
-  parallax `transform`), never specific icon positions. Idle motion is a CSS keyframe; the
-  pointer-follow nudge is `heroParallax.ts` — a deliberately tiny, separate sibling to
-  `TiltController`, not a reuse of it (one pair of shared `--hero-pointer-x/y` custom properties on
-  the hero container, no rotation, no per-card math).
+- **Home hero's floating decorations** (`home.css`, `home.ts`, `effects/floatPhysics.ts`) are this
+  app's own `faceIcon` thumbnails (real servant data, randomly sampled each load, currently 24 of
+  them) — **not** copies of inkgames' actual icon art (their proprietary game assets). Position
+  isn't static — `floatPhysics.ts` runs a small hand-rolled 2D physics simulation: each icon drifts
+  at a random constant velocity, bounces off the hero's edges, and elastically rebounds off the
+  other icons on collision (equal-mass circle-circle collision — separate the overlap, then swap
+  the velocity components along the collision normal). Hand-rolled rather than a physics library
+  for the same reason `pointerTilt.ts`'s tilt math is hand-rolled — a bounded couple dozen circles
+  bouncing around a box is a narrow, cheap-to-write simulation that doesn't benefit from a general
+  physics engine's API surface/bundle weight. Position is written every frame as
+  `transform: translate3d(...)` (never `top`/`left`) for compositor-friendliness. Reduced motion:
+  positions the icons once (a static scatter) and never starts the `requestAnimationFrame` loop at
+  all, rather than starting it and immediately stopping it.
 
 ### Animation library — GSAP + ScrollTrigger (not `motion`)
 
@@ -344,6 +358,12 @@ side by side for overlapping jobs.
   pointerenter/pointerleave pair, not something tied to scroll position, so it's a plain
   `gsap.to()` per event with no `ScrollTrigger` (and therefore nothing to leak/clean up beyond the
   two event listeners its own cleanup function removes).
+- The hero title ("Pull a Servant Card") gets its own **dedicated** entrance in `home.ts`'s
+  `animateHeroTitle()`, separate from the generic `.reveal` system — each of its 3 lines sits in
+  its own `overflow: hidden` `.hero__heading-mask` span, and `gsap.set`/`gsap.to` slides the inner
+  `.hero__heading-line` up from `yPercent: 110` to `0` with a stagger, so it looks like each line
+  rises up from behind a mask rather than fading in. Not scroll-triggered — the hero is always
+  above the fold on load, so it just fires once, immediately, on mount.
 
 **Hard-won lesson — never gate a functional step behind an animation's promise.** The Home⇄Gallery
 route crossfade originally did `animate(outlet, {opacity:[1,0]}).then(() => { swap(); animate(...) })`

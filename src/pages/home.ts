@@ -14,7 +14,7 @@ import {
   type ServantHighlight,
 } from "../factGenerators.ts";
 import { attachHoverLift } from "../effects/hoverLift.ts";
-import { initHeroParallax } from "../effects/heroParallax.ts";
+import { initFloatPhysics } from "../effects/floatPhysics.ts";
 import { prefersReducedMotion } from "../effects/motionPreference.ts";
 import { initScrollReveal, refreshScrollReveal } from "../effects/scrollReveal.ts";
 import { initSectionDividers } from "../effects/sectionDividers.ts";
@@ -65,10 +65,6 @@ export function renderHomePage(mount: HTMLElement): () => void {
     buildHoloGallerySection(),
   );
 
-  const heroSection = required(
-    mount.querySelector<HTMLElement>(".hero"),
-    "Home shell failed to build",
-  );
   const pullButton = required(
     mount.querySelector<HTMLButtonElement>(".hero__pull-btn"),
     "Home shell failed to build",
@@ -88,11 +84,12 @@ export function renderHomePage(mount: HTMLElement): () => void {
     navigate("gallery");
   });
 
-  const stopParallax = prefersReducedMotion() ? null : initHeroParallax(heroSection);
+  let stopFloatPhysics: (() => void) | null = null;
 
   const unsubscribe = subscribeRoster((state) => handleRosterState(state));
   revealCleanups.push(initScrollReveal(mount));
   revealCleanups.push(initSectionDividers(mount));
+  animateHeroTitle(mount.querySelectorAll<HTMLElement>(".hero__heading-line"));
 
   // Static content — doesn't depend on the roster, so it's populated immediately rather than
   // deferred like the data-driven sections below.
@@ -124,10 +121,11 @@ export function renderHomePage(mount: HTMLElement): () => void {
     iconsPopulated = true;
     const withIcons = roster.filter((s) => s.faceIcon);
     const sample = sampleServants(withIcons, FLOAT_ICON_COUNT);
-    const positions = generateFloatPositions(sample.length);
-    floatLayer.replaceChildren(
-      ...sample.map((servant, i) => buildFloatIcon(servant, positions[i]!)),
-    );
+    const iconEls = sample.map(buildFloatIcon);
+    floatLayer.replaceChildren(...iconEls);
+    // Physics needs each icon's real rendered size (offsetWidth) to compute its collision
+    // radius, so this only runs once the elements are actually in the DOM, not before.
+    stopFloatPhysics = initFloatPhysics(floatLayer, iconEls);
   }
 
   function populateFactsSection(roster: ServantSummary[]): void {
@@ -220,7 +218,7 @@ export function renderHomePage(mount: HTMLElement): () => void {
 
   return () => {
     unsubscribe();
-    stopParallax?.();
+    stopFloatPhysics?.();
     for (const stop of revealCleanups) stop();
     for (const stop of hoverCleanups) stop();
     renderCardGrid(
@@ -255,53 +253,14 @@ function sampleServants(servants: ServantSummary[], count: number): ServantSumma
   return sample;
 }
 
-interface FloatPosition {
-  top: number;
-  left: number;
-  size: number;
-  rotate: number;
-  delay: number;
-  parallax: number;
-}
-
-/** Scatters `count` icons across the hero in a jittered grid — even coverage without hand-authoring one CSS rule per icon. */
-function generateFloatPositions(count: number): FloatPosition[] {
-  if (count === 0) return [];
-  const cols = Math.max(1, Math.round(Math.sqrt(count * (16 / 9))));
-  const rows = Math.max(1, Math.ceil(count / cols));
-  const cellW = 100 / cols;
-  const cellH = 100 / rows;
-  const positions: FloatPosition[] = [];
-  for (let i = 0; i < count; i++) {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const jitterX = (Math.random() - 0.5) * cellW * 0.7;
-    const jitterY = (Math.random() - 0.5) * cellH * 0.7;
-    positions.push({
-      top: row * cellH + cellH / 2 + jitterY,
-      left: col * cellW + cellW / 2 + jitterX,
-      size: 1.5 + Math.random() * 2.1,
-      rotate: (Math.random() - 0.5) * 20,
-      delay: Math.random() * 5,
-      parallax: 8 + Math.random() * 22,
-    });
-  }
-  return positions;
-}
-
-function buildFloatIcon(servant: ServantSummary, pos: FloatPosition): HTMLElement {
-  const outer = document.createElement("div");
-  outer.className = "hero__float";
-  outer.style.top = `${pos.top}%`;
-  outer.style.left = `${pos.left}%`;
-  outer.style.width = `${pos.size}rem`;
-  outer.style.height = `${pos.size}rem`;
-  outer.style.setProperty("--float-parallax", `${pos.parallax}px`);
-
-  const inner = document.createElement("div");
-  inner.className = "hero__float-inner";
-  inner.style.setProperty("--float-delay", `${pos.delay}s`);
-  inner.style.setProperty("--float-rotate", `${pos.rotate}deg`);
+/** Position comes entirely from floatPhysics.ts's per-frame drift/collision simulation — this
+ * only needs to pick a random display size for variety before physics reads it via offsetWidth. */
+function buildFloatIcon(servant: ServantSummary): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "hero__float";
+  const size = 1.5 + Math.random() * 2.1;
+  el.style.width = `${size}rem`;
+  el.style.height = `${size}rem`;
 
   const img = document.createElement("img");
   img.src = servant.faceIcon ?? "";
@@ -309,9 +268,22 @@ function buildFloatIcon(servant: ServantSummary, pos: FloatPosition): HTMLElemen
   img.loading = "lazy";
   img.decoding = "async";
 
-  inner.appendChild(img);
-  outer.appendChild(inner);
-  return outer;
+  el.appendChild(img);
+  return el;
+}
+
+/** Slides each hero__heading-line up from behind its overflow-clipped mask, staggered — a more
+ * pronounced, dedicated entrance than the generic blur/scale `.reveal` treatment used elsewhere,
+ * since the title is the single most important element on the page. Not scroll-triggered (the
+ * hero is always above the fold on load), just a one-shot animation fired on mount. */
+function animateHeroTitle(lines: NodeListOf<HTMLElement>): void {
+  if (lines.length === 0) return;
+  if (prefersReducedMotion()) {
+    gsap.set(lines, { yPercent: 0 });
+    return;
+  }
+  gsap.set(lines, { yPercent: 110 });
+  gsap.to(lines, { yPercent: 0, duration: 0.9, ease: "power4.out", stagger: 0.12, delay: 0.15 });
 }
 
 function buildFactTile(fact: RosterFact): HTMLElement {
@@ -434,8 +406,16 @@ function buildHero(): HTMLElement {
   eyebrow.textContent = "Fate Holo Codex";
 
   const heading = document.createElement("h1");
-  heading.className = "hero__heading reveal";
-  heading.innerHTML = "Pull a<br>Servant<br>Card";
+  heading.className = "hero__heading";
+  for (const line of ["Pull a", "Servant", "Card"]) {
+    const mask = document.createElement("span");
+    mask.className = "hero__heading-mask";
+    const lineEl = document.createElement("span");
+    lineEl.className = "hero__heading-line";
+    lineEl.textContent = line;
+    mask.appendChild(lineEl);
+    heading.appendChild(mask);
+  }
 
   const ctaRow = document.createElement("div");
   ctaRow.className = "hero__cta-row reveal";

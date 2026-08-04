@@ -9,7 +9,11 @@
   min-height: 90vh;
   justify-content: center;
   padding: var(--space-section) clamp(1rem, 4vw, 2.5rem);
-  overflow: hidden;
+  /* No overflow:hidden here (unlike an earlier version of this file) — it clipped the hero
+     card's rotated 3D silhouette at extreme tilt angles. A rotated rectangle's rendered footprint
+     extends past its resting bounding box, so any clipping ancestor around the tilting card
+     shows it missing a corner/edge at the far ends of the pointer range. Only .hero__floats
+     (below) needs clipping, to keep the physics-driven icons from drawing outside the hero. */
 }
 
 .hero__floats {
@@ -17,25 +21,17 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
 }
 
-/* Position/size/delay/rotation are set per-icon as inline styles by home.ts's
-   generateFloatPositions() — scales to any icon count without hand-authoring one CSS rule per
-   icon, unlike an earlier version of this file. */
+/* Position is driven entirely by floatPhysics.ts's continuous per-frame transform writes (each
+   icon drifts and rebounds off the others/the walls) — unlike an earlier version of this file,
+   there's no static top/left placement or idle CSS keyframe here anymore. */
 .hero__float {
   position: absolute;
-  transform: translate(
-    calc(var(--hero-pointer-x, 0) * var(--float-parallax, 10px)),
-    calc(var(--hero-pointer-y, 0) * var(--float-parallax, 10px))
-  );
-  transition: transform 0.2s ease-out;
-}
-
-.hero__float-inner {
-  width: 100%;
-  height: 100%;
-  animation: hero-float 8s ease-in-out infinite;
-  animation-delay: var(--float-delay, 0s);
+  top: 0;
+  left: 0;
+  will-change: transform;
   filter: drop-shadow(0 0 0.6rem rgba(255, 123, 214, 0.25));
 }
 
@@ -46,16 +42,6 @@
   object-fit: cover;
   display: block;
   opacity: 0.7;
-}
-
-@keyframes hero-float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(var(--float-rotate, 0deg));
-  }
-  50% {
-    transform: translateY(-14px) rotate(calc(var(--float-rotate, 0deg) * -1));
-  }
 }
 
 .hero__text {
@@ -76,6 +62,18 @@
   letter-spacing: 0.02em;
 }
 
+/* Each line sits in its own overflow-clipped mask so animateHeroTitle() (home.ts) can slide the
+   line up from fully hidden without it ever visibly poking out below the heading first. */
+.hero__heading-mask {
+  display: block;
+  overflow: hidden;
+}
+
+.hero__heading-line {
+  display: block;
+  will-change: transform;
+}
+
 .hero__cta-row {
   display: flex;
   flex-wrap: wrap;
@@ -88,6 +86,10 @@
   z-index: 1;
   display: flex;
   justify-content: center;
+  /* Extra breathing room around the card itself — belt-and-suspenders alongside removing
+     .hero's overflow:hidden above, so the tilted card's rotated footprint has room even if this
+     zone is ever nested inside a clipping ancestor again later. */
+  padding: 2.5rem clamp(1.5rem, 6vw, 4rem);
 }
 
 .hero__card-mount {

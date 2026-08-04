@@ -286,7 +286,7 @@ body {
 }
 
 .card-grid--hero .card-frame {
-  width: min(360px, 80vw);
+  width: min(420px, 82vw);
 }
 
 /* ---------- Card ---------- */
@@ -573,9 +573,9 @@ body {
 
   /* .reveal's actual opacity/transform is set inline by GSAP (scrollReveal.ts), which checks
      prefersReducedMotion() itself and jumps straight to the end state — no CSS override needed
-     here. .hero__float-inner's idle bob and .marquee__track's scroll and .holo-swatch's demo
-     sweep are all plain CSS keyframes, so they still need one each. */
-  .hero__float-inner,
+     here (same for the hero floats, which floatPhysics.ts also gates via prefersReducedMotion()
+     and never starts the RAF loop for). .marquee__track's scroll and .holo-swatch's demo sweep
+     are plain CSS keyframes, so they still need one each. */
   .marquee__track,
   .holo-swatch {
     animation: none;
