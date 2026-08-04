@@ -138,19 +138,23 @@ actually needs containment), leaving `.hero` itself unclipped, plus extra paddin
 add a new clipping ancestor around the hero card, re-check all four extreme pointer corners
 before calling it done — this exact bug doesn't show at gentle angles, only the extremes.
 
-**Never stack two `perspective` sources on the same tilted element.** A _separate_, more visible
-issue than the clipping above: at extreme tilt angles a visible gap (background/floating icons
-showing through) appeared right at the card's near corner — this is real 3D perspective
-foreshortening (a plane rotated away from the viewer projects smaller on its far side than its
-resting rectangle, so it stops fully covering that corner) and is inherent to _any_ 3D tilt effect,
-not fixable by making a container bigger. But it was much more pronounced than it should have
-been, because `.card`'s own `transform` used to _also_ set `perspective(1000px)` as its first
-function, stacking a second, closer 3D projection on top of `.card-frame`'s ancestor
-`perspective: 1200px` property — these don't average, they compound. Fixed by keeping exactly one
-perspective source (`.card-frame`'s `perspective` property, bumped to `1800px` — a more distant
-"camera" flattens the projection further) and removing the redundant `perspective()` function from
-`.card`'s own `transform`. Confirmed directly: the same ~14° rotation that used to show an obvious
-triangular gap at the corner now shows only a faint, expected sliver.
+**The hero card's frame is bigger than the card itself, on purpose.** At extreme tilt angles a
+gap (background/floating icons showing through) appears right at the card's near corner — this is
+real 3D perspective foreshortening: a plane rotated away from the viewer projects smaller on its
+far side than its resting rectangle, so it stops fully covering that corner. It's inherent to any
+3D tilt effect (the reference site's cards do it too) and the underlying geometry doesn't change
+with container size — the same card, rotation, and perspective produce the same-size gap in
+absolute pixels regardless of what's around it. (An earlier attempt fixed the _geometry_ instead,
+by removing a redundant second `perspective()` that `.card`'s own transform used to stack on top
+of `.card-frame`'s `perspective` property — that measurably shrank the gap, but also flattened the
+tilt's depth, which was a real tradeoff the user didn't want.) What actually shipped: keep the
+original tilt depth (`.card-frame`'s `perspective: 1200px` + `.card`'s own `perspective(1000px)`
+in its transform, both present, as before) and instead give the gap more matching dark space to
+sit inside — `.card-grid--hero .card-frame` is now a bigger flex-centering box
+(`min(620px, 92vw)`, `aspect-ratio: 5/7`) with `.card-grid--hero .card` fixed at its original
+`min(420px, 76vw)` size, centered inside it. The gap's absolute size is unchanged; it just reads
+as far less jarring surrounded by more of the same dark background instead of sitting flush
+against the frame's edge. Confirmed directly in the browser at ~14° rotation on both corners.
 
 Below the hero, `home.ts` renders six more sections in order, separated by animated
 `.section-divider`s (see "Animation library" below) and alternating a `.section--tinted`

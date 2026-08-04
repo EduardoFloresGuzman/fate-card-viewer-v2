@@ -286,23 +286,28 @@ body {
 }
 
 .card-grid--hero .card-frame {
-  width: min(420px, 82vw);
+  /* The FRAME (this box) is deliberately bigger than the CARD itself (below) — the card keeps
+     its original size/rotation/perspective unchanged, but now sits centered inside a roomier
+     invisible box instead of one sized to fit it exactly, so its rotated silhouette has more
+     surrounding space at extreme tilt angles. */
+  width: min(620px, 92vw);
+  aspect-ratio: 5 / 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-grid--hero .card {
+  /* The card's own visible size — unchanged from before, only the frame around it (above) grew. */
+  width: min(420px, 76vw);
+  flex-shrink: 0;
 }
 
 /* ---------- Card ---------- */
 
 .card-frame {
-  /* This is the ONLY perspective source for the tilt — .card used to also set its own
-     perspective(1000px) inside its transform, which doesn't average with this one, it *stacks*
-     a second, closer 3D projection on top of it. That double-perspective was compounding the
-     foreshortening far beyond what either alone would produce: at extreme rotation angles, a
-     tilted flat plane's far edge naturally projects smaller than its resting rectangle (true 3D
-     perspective, not a bug) — but the stacked perspective made that gap much more pronounced than
-     it needed to be. Bumped from 1200px to 1800px (a more distant "camera") on top of removing
-     the duplicate, which flattens the projection further and visibly shrinks the gap at the
-     pointer-range extremes.
-     Skip layout/paint work entirely for off-screen cards — cheap insurance for a 400+ card grid. */
-  perspective: 1800px;
+  /* Skip layout/paint work entirely for off-screen cards — cheap insurance for a 400+ card grid. */
+  perspective: 1200px;
   content-visibility: auto;
   contain-intrinsic-size: 280px 392px;
 }
@@ -317,7 +322,11 @@ body {
   box-shadow:
     0 10px 25px -10px rgba(0, 0, 0, 0.6),
     0 0 0 1px var(--border);
-  transform: rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+  /* Restored to the original perspective(1000px) + rotate — a prior change here (flattening the
+     tilt by removing this and raising .card-frame's perspective to 1800px) reduced the far-edge
+     gap but also visibly softened the tilt's depth, which was the point of the effect. Reverted
+     at the user's explicit request in favor of testing a larger .card-frame (above) instead. */
+  transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
   transform-style: preserve-3d;
   transition:
     --rotate-x 0.6s cubic-bezier(0.22, 1, 0.36, 1),
